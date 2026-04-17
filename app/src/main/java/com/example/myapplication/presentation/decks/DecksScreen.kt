@@ -122,79 +122,87 @@ fun DecksScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+        androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
             ) {
-                Text("Thư viện của bạn", color = cs.onSurface, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                Text("${uiState.decks.size} bộ", color = cs.onSurfaceVariant, fontSize = 14.sp)
-            }
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Tìm kiếm bộ thẻ...", color = cs.onSurfaceVariant) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = cs.onSurfaceVariant) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(14.dp),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = cs.primary,
-                    unfocusedBorderColor = cs.outlineVariant,
-                    focusedContainerColor = cs.surfaceContainer,
-                    unfocusedContainerColor = cs.surfaceContainer,
-                    focusedTextColor = cs.onSurface,
-                    unfocusedTextColor = cs.onSurface,
-                    cursorColor = cs.primary
-                )
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = cs.primary)
-                }
-            } else if (uiState.decks.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Chưa có bộ thẻ nào", color = cs.onSurfaceVariant, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Bấm nút + để tạo bộ thẻ đầu tiên!", color = cs.onSurfaceVariant, fontSize = 14.sp)
-                    }
-                }
-            } else {
-                val filteredDecks = uiState.decks.filter {
-                    it.name.contains(searchQuery, ignoreCase = true)
-                }
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(1),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(filteredDecks) { deck ->
-                        DeckCard(
-                            deck = deck,
-                            onClick = { onDeckClick(deck.id) },
-                            onRenameClick = { deckToRename = deck },
-                            onDeleteClick = { deckToDelete = deck },
-                            onLeaveClick = { deckToLeave = deck }
-                        )
+                    Text("Thư viện của bạn", color = cs.onSurface, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text("${uiState.decks.size} bộ", color = cs.onSurfaceVariant, fontSize = 14.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Tìm kiếm bộ thẻ...", color = cs.onSurfaceVariant) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = cs.onSurfaceVariant) },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = cs.primary,
+                        unfocusedBorderColor = cs.outlineVariant,
+                        focusedContainerColor = cs.surfaceContainer,
+                        unfocusedContainerColor = cs.surfaceContainer,
+                        focusedTextColor = cs.onSurface,
+                        unfocusedTextColor = cs.onSurface,
+                        cursorColor = cs.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = cs.primary)
+                    }
+                } else if (uiState.decks.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Chưa có bộ thẻ nào", color = cs.onSurfaceVariant, fontSize = 16.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Bấm nút + để tạo bộ thẻ đầu tiên!", color = cs.onSurfaceVariant, fontSize = 14.sp)
+                        }
+                    }
+                } else {
+                    val filteredDecks = uiState.decks.filter {
+                        it.name.contains(searchQuery, ignoreCase = true)
+                    }
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(1),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredDecks) { deck ->
+                            DeckCard(
+                                deck = deck,
+                                onClick = { onDeckClick(deck.id) },
+                                onRenameClick = { deckToRename = deck },
+                                onDeleteClick = { deckToDelete = deck },
+                                onLeaveClick = { deckToLeave = deck }
+                            )
+                        }
                     }
                 }
             }

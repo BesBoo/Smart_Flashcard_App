@@ -195,11 +195,17 @@ fun DeckDetailScreen(
             return@Scaffold
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+        androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refreshFromServer() },
+            modifier = Modifier.fillMaxSize().padding(padding)
         ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
             // Study Card Header
             item {
                 StudyHeaderCard(
@@ -447,6 +453,7 @@ fun DeckDetailScreen(
 
             // Bottom spacing for FAB
             item { Spacer(Modifier.height(72.dp)) }
+        }
         }
     }
 

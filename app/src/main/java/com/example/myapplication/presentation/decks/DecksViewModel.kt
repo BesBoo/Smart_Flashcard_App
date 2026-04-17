@@ -21,6 +21,7 @@ import javax.inject.Inject
 
 data class DecksUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val decks: List<Deck> = emptyList(),
     val error: String? = null,
     val violations: List<ViolationNotice> = emptyList(),
@@ -67,14 +68,17 @@ class DecksViewModel @Inject constructor(
         }
     }
 
-    /** Re-sync decks from server (called when screen becomes visible) */
+    /** Re-sync decks from server (called on pull-to-refresh) */
     fun refresh() {
         viewModelScope.launch {
             val userId = userRepository.getCurrentUserId() ?: return@launch
+            _uiState.update { it.copy(isRefreshing = true) }
             try {
                 deckRepository.syncDecks(userId)
             } catch (_: Exception) {
                 // Offline — keep local data
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }
