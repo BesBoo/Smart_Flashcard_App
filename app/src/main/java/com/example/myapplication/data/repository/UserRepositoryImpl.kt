@@ -133,20 +133,25 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveUserLocally(user: User) {
-        userDao.insertUser(
-            com.example.myapplication.data.local.entity.UserEntity(
-                id = user.id,
-                email = user.email,
-                passwordHash = "",  // Not stored locally — auth is JWT-based
-                displayName = user.displayName,
-                avatarUrl = user.avatarUrl,
-                role = user.role.toApiString(),
-                subscriptionTier = user.subscriptionTier.name.lowercase(),
-                aiUsageToday = user.aiUsageToday,
-                isActive = user.isActive,
-                createdAt = user.createdAt
-            )
+        val entity = com.example.myapplication.data.local.entity.UserEntity(
+            id = user.id,
+            email = user.email,
+            passwordHash = "",  // Not stored locally — auth is JWT-based
+            displayName = user.displayName,
+            avatarUrl = user.avatarUrl,
+            role = user.role.toApiString(),
+            subscriptionTier = user.subscriptionTier.name.lowercase(),
+            aiUsageToday = user.aiUsageToday,
+            isActive = user.isActive,
+            createdAt = user.createdAt
         )
+        // Use UPDATE if user exists to avoid CASCADE delete of all related data
+        val existing = userDao.getUserById(user.id)
+        if (existing != null) {
+            userDao.updateUser(entity)
+        } else {
+            userDao.insertUser(entity)
+        }
     }
 
     // ── Forgot Password ──
