@@ -61,7 +61,7 @@ fun ForgotPasswordScreen(
 
             // ── Icon ──
             Text(
-                text = "🔑",
+                text = "",
                 fontSize = 48.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
             )

@@ -109,10 +109,12 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isUpdatingEmail = false,
-                        emailUpdateResult = msg,
-                        user = it.user?.copy(email = newEmail)
+                        emailUpdateResult = "Email đã được cập nhật. Đang chuyển về đăng nhập..."
                     )
                 }
+                kotlinx.coroutines.delay(1500)
+                userRepository.logout()
+                _uiState.update { it.copy(loggedOut = true) }
             } catch (e: Exception) {
                 val errorMsg = when {
                     e.message?.contains("đã được sử dụng") == true -> "Email này đã được sử dụng bởi tài khoản khác."

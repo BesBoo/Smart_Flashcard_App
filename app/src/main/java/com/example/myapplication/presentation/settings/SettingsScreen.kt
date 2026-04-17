@@ -322,15 +322,6 @@ fun SettingsScreen(
             }
         )
     }
-
-    // Auto-close dialog on success
-    LaunchedEffect(uiState.emailUpdateResult) {
-        if (uiState.emailUpdateResult != null) {
-            kotlinx.coroutines.delay(1500)
-            showEmailDialog = false
-            viewModel.clearEmailResult()
-        }
-    }
 }
 
 @Composable
