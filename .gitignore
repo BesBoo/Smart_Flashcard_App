@@ -1,0 +1,32 @@
+# ── Android ──
+*.iml
+.gradle/
+local.properties
+.idea/
+*.apk
+*.aab
+*.ap_
+*.dex
+build/
+app/build/
+app/schemas/
+captures/
+.externalNativeBuild/
+.cxx/
+google-services.json
+app/release.keystore
+
+# ── C# Backend ──
+backend/SmartFlashcardAPI/bin/
+backend/SmartFlashcardAPI/obj/
+backend/SmartFlashcardAPI/wwwroot/generated_images/
+*.user
+*.suo
+*.log
+*.txt
+!backend/SmartFlashcardAPI/appsettings*.json
+
+# ── General ──
+.DS_Store
+Thumbs.db
+*.env

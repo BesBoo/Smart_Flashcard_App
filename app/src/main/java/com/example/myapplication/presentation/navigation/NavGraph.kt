@@ -1,0 +1,127 @@
+package com.example.myapplication.presentation.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.myapplication.presentation.aigenerate.AiGenerateScreen
+import com.example.myapplication.presentation.aitutor.AiTutorScreen
+import com.example.myapplication.presentation.deckdetail.DeckDetailScreen
+import com.example.myapplication.presentation.decks.DecksScreen
+import com.example.myapplication.presentation.flashcardeditor.FlashcardEditorScreen
+import com.example.myapplication.presentation.home.HomeScreen
+import com.example.myapplication.presentation.quiz.QuizScreen
+import com.example.myapplication.presentation.settings.SettingsScreen
+import com.example.myapplication.presentation.share.JoinDeckScreen
+import com.example.myapplication.presentation.stats.StatsScreen
+import com.example.myapplication.presentation.study.StudySessionScreen
+
+@Composable
+fun MainNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {}
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier
+    ) {
+        // ── Bottom Navigation Tabs ──
+        composable(route = Screen.Home.route) {
+            HomeScreen(
+                onStartStudyClick = {
+                    navController.navigate(Screen.StudySession.createRoute("all"))
+                }
+            )
+        }
+        composable(route = Screen.Decks.route) {
+            DecksScreen(
+                onDeckClick = { deckId ->
+                    navController.navigate(Screen.DeckDetail.createRoute(deckId))
+                },
+                onCreateDeckClick = { },
+                onJoinDeckClick = {
+                    navController.navigate(Screen.JoinDeck.route)
+                }
+            )
+        }
+        composable(route = Screen.AiTutor.route) {
+            AiTutorScreen()
+        }
+        composable(route = Screen.Stats.route) {
+            StatsScreen()
+        }
+        composable(route = Screen.Settings.route) {
+            SettingsScreen(onLogout = onLogout)
+        }
+
+        // ── Sub-screens ──
+        composable(
+            route = Screen.DeckDetail.route,
+            arguments = listOf(navArgument("deckId") { type = NavType.StringType })
+        ) {
+            DeckDetailScreen(
+                onNavigateBack = { navController.navigateUp() },
+                onStartStudy = { deckId ->
+                    navController.navigate(Screen.StudySession.createRoute(deckId))
+                },
+                onAddCard = { deckId ->
+                    navController.navigate(Screen.FlashcardEditor.createRoute(deckId, "new"))
+                },
+                onEditCard = { deckId, cardId ->
+                    navController.navigate(Screen.FlashcardEditor.createRoute(deckId, cardId))
+                },
+                onAiGenerate = { deckId ->
+                    navController.navigate(Screen.AiGenerate.createRoute(deckId))
+                },
+                onQuiz = { deckId ->
+                    navController.navigate(Screen.Quiz.createRoute(deckId))
+                }
+            )
+        }
+        composable(
+            route = Screen.StudySession.route,
+            arguments = listOf(navArgument("deckId") { type = NavType.StringType })
+        ) {
+            StudySessionScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(
+            route = Screen.FlashcardEditor.route,
+            arguments = listOf(
+                navArgument("deckId") { type = NavType.StringType },
+                navArgument("cardId") { type = NavType.StringType; defaultValue = "new" }
+            )
+        ) {
+            FlashcardEditorScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(
+            route = Screen.AiGenerate.route,
+            arguments = listOf(navArgument("deckId") { type = NavType.StringType })
+        ) {
+            AiGenerateScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(
+            route = Screen.Quiz.route,
+            arguments = listOf(navArgument("deckId") { type = NavType.StringType })
+        ) {
+            QuizScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(route = Screen.JoinDeck.route) {
+            JoinDeckScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+    }
+}
