@@ -17,4 +17,6 @@ COPY --from=build /app/publish .
 RUN mkdir -p /app/wwwroot/generated_images
 
 ENV ASPNETCORE_URLS=http://+:10000
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
 ENTRYPOINT ["dotnet", "SmartFlashcardAPI.dll"]
