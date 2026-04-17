@@ -49,7 +49,7 @@ class LoginViewModel @Inject constructor(
             } catch (e: Exception) {
                 // Return clear error message to user
                 val errorMessage = if (e.message?.contains("Failed to connect") == true || e.message?.contains("timeout") == true) {
-                    "Không thể kết nối máy chủ. Vui lòng kiểm tra Server Backend (http://10.0.2.2:5131)"
+                    "Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng."
                 } else if (e.message?.contains("401") == true) {
                     "Email hoặc mật khẩu không chính xác."
                 } else {

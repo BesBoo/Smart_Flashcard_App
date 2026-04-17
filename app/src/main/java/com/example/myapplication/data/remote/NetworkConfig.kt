@@ -5,5 +5,5 @@ package com.example.myapplication.data.remote
  * Must end with `/`.
  */
 object NetworkConfig {
-    const val BASE_URL = "http://10.0.2.2:5131/"
+    const val BASE_URL = "https://smart-flashcard-app-i96u.onrender.com/"
 }
