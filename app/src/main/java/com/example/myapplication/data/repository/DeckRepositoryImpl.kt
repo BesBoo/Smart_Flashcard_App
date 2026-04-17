@@ -119,7 +119,19 @@ class DeckRepositoryImpl @Inject constructor(
             } while (cursor != null)
 
             if (remoteDecks.isNotEmpty()) {
-                deckDao.insertDecks(remoteDecks.map { it.toEntity() })
+                // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
+                val entities = remoteDecks.map { it.toEntity() }
+                deckDao.insertDecksIgnore(entities)
+                for (e in entities) {
+                    deckDao.updateDeckFields(
+                        id = e.id, name = e.name, description = e.description,
+                        coverImageUrl = e.coverImageUrl, isOwner = e.isOwner,
+                        permission = e.permission, ownerName = e.ownerName,
+                        shareCode = e.shareCode, isShared = e.isShared,
+                        googleSheetUrl = e.googleSheetUrl, isDeleted = e.isDeleted,
+                        updatedAt = e.updatedAt
+                    )
+                }
             }
 
             // Step 2: Sync flashcards for each deck from server
@@ -178,7 +190,17 @@ class DeckRepositoryImpl @Inject constructor(
                                 remote
                             }
                         }
-                        flashcardDao.insertFlashcards(mergedCards)
+                        // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
+                        flashcardDao.insertFlashcardsIgnore(mergedCards)
+                        for (c in mergedCards) {
+                            flashcardDao.updateCardFields(
+                                id = c.id, frontText = c.frontText, backText = c.backText,
+                                exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
+                                repetition = c.repetition, intervalDays = c.intervalDays,
+                                easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
+                                failCount = c.failCount, totalReviews = c.totalReviews
+                            )
+                        }
                     }
                 } catch (_: Exception) {
                     // Skip card sync for this deck if it fails
@@ -240,7 +262,17 @@ class DeckRepositoryImpl @Inject constructor(
                         remote
                     }
                 }
-                flashcardDao.insertFlashcards(mergedCards)
+                // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
+                flashcardDao.insertFlashcardsIgnore(mergedCards)
+                for (c in mergedCards) {
+                    flashcardDao.updateCardFields(
+                        id = c.id, frontText = c.frontText, backText = c.backText,
+                        exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
+                        repetition = c.repetition, intervalDays = c.intervalDays,
+                        easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
+                        failCount = c.failCount, totalReviews = c.totalReviews
+                    )
+                }
             }
 
             // Remove local cards that no longer exist on server

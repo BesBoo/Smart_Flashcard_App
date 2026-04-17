@@ -18,6 +18,12 @@ interface DeckDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDecks(decks: List<DeckEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertDeckIgnore(deck: DeckEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertDecksIgnore(decks: List<DeckEntity>)
+
     @Update
     suspend fun updateDeck(deck: DeckEntity)
 
@@ -52,6 +58,22 @@ interface DeckDao {
 
     @Query("DELETE FROM decks WHERE userId = :userId")
     suspend fun deleteAllDecksByUser(userId: String)
+
+    // Safe upsert — avoids CASCADE delete triggered by REPLACE
+    @Query("""
+        UPDATE decks SET 
+            name = :name, description = :description, coverImageUrl = :coverImageUrl,
+            isOwner = :isOwner, permission = :permission, ownerName = :ownerName,
+            shareCode = :shareCode, isShared = :isShared, googleSheetUrl = :googleSheetUrl,
+            isDeleted = :isDeleted, updatedAt = :updatedAt
+        WHERE id = :id
+    """)
+    suspend fun updateDeckFields(
+        id: String, name: String, description: String?, coverImageUrl: String?,
+        isOwner: Boolean, permission: String?, ownerName: String?,
+        shareCode: String?, isShared: Boolean, googleSheetUrl: String?,
+        isDeleted: Boolean, updatedAt: Long
+    )
 
     // Sync support
     @Query("SELECT * FROM decks WHERE userId = :userId AND updatedAt > :since")
