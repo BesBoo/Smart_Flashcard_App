@@ -78,16 +78,16 @@ class DeckDetailViewModel @Inject constructor(
     }
 
     /** Sync flashcards from server so edits by shared-deck members are visible */
-    fun refreshFromServer() {
+    fun refreshFromServer(showIndicator: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
+            if (showIndicator) _uiState.update { it.copy(isRefreshing = true) }
             try {
                 val userId = userRepository.getCurrentUserId() ?: return@launch
                 deckRepository.syncFlashcardsForDeck(deckId, userId)
             } catch (_: Exception) {
                 // Offline — ignore
             } finally {
-                _uiState.update { it.copy(isRefreshing = false) }
+                if (showIndicator) _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }

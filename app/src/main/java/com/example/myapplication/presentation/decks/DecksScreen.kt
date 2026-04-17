@@ -81,17 +81,6 @@ fun DecksScreen(
     var deckToDelete by remember { mutableStateOf<Deck?>(null) }
     var deckToLeave by remember { mutableStateOf<Deck?>(null) }
 
-    // Auto-refresh from server when screen becomes visible
-    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                viewModel.refresh()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -125,7 +114,7 @@ fun DecksScreen(
         @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
         androidx.compose.material3.pulltorefresh.PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = { viewModel.refresh(showIndicator = true) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)

@@ -112,18 +112,6 @@ fun DeckDetailScreen(
     val isOwner = deck?.isOwner != false
     val canEdit = isOwner || deck?.permission == "edit"
 
-    // Auto-refresh from server when screen becomes visible
-    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                viewModel.refreshFromServer()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
     // Excel file picker
     val excelPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -198,7 +186,7 @@ fun DeckDetailScreen(
         @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
         androidx.compose.material3.pulltorefresh.PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
-            onRefresh = { viewModel.refreshFromServer() },
+            onRefresh = { viewModel.refreshFromServer(showIndicator = true) },
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             LazyColumn(
