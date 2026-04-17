@@ -47,6 +47,9 @@ data class ResetPasswordRequest(
 data class GoogleLoginRequest(val idToken: String)
 
 @Serializable
+data class UpdateEmailRequest(val newEmail: String)
+
+@Serializable
 data class MessageResponse(val message: String)
 
 @Serializable

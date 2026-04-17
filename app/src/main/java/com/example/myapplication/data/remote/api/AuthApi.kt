@@ -32,5 +32,5 @@ interface AuthApi {
     suspend fun googleLogin(@Body request: GoogleLoginRequest): AuthResponse
 
     @retrofit2.http.PUT("api/auth/update-email")
-    suspend fun updateEmail(@Body request: Map<String, String>): MessageResponse
+    suspend fun updateEmail(@Body request: com.example.myapplication.data.remote.dto.UpdateEmailRequest): MessageResponse
 }

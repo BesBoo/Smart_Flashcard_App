@@ -68,7 +68,7 @@ public class AuthService
 
     public async Task UpdateEmailAsync(Guid userId, string newEmail)
     {
-        var user = await _db.Users.FindAsync(userId)
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive)
             ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
 
         // Check if new email is already taken
