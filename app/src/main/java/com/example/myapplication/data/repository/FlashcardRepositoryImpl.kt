@@ -108,6 +108,30 @@ class FlashcardRepositoryImpl @Inject constructor(
             nextReviewDate = nextReviewDate,
             quality = quality
         )
+        // Sync SM2 progress to server so it persists across logout/login
+        try {
+            val card = flashcardDao.getFlashcardById(cardId)
+            if (card != null) {
+                flashcardApi.updateCard(
+                    id = cardId,
+                    request = UpdateFlashcardRequest(
+                        frontText = card.frontText,
+                        backText = card.backText,
+                        exampleText = card.exampleText,
+                        imageUrl = card.imageUrl,
+                        audioUrl = card.audioUrl,
+                        repetition = repetition,
+                        intervalDays = intervalDays,
+                        easeFactor = easeFactor,
+                        nextReviewDate = nextReviewDate.toString(),
+                        failCount = card.failCount,
+                        totalReviews = card.totalReviews
+                    )
+                )
+            }
+        } catch (_: Exception) {
+            // Offline — server will sync later
+        }
     }
 
     override suspend fun deleteFlashcard(cardId: String) {
