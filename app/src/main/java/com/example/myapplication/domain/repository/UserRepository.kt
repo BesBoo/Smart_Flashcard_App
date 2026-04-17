@@ -25,4 +25,7 @@ interface UserRepository {
 
     // ── Google Sign-In ──
     suspend fun googleLogin(idToken: String): LoginResult
+
+    // ── Update Email ──
+    suspend fun updateEmail(newEmail: String): String
 }

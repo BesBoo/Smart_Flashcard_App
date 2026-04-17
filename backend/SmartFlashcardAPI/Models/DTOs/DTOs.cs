@@ -10,6 +10,7 @@ public record RefreshRequest(string RefreshToken);
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 public record GoogleLoginRequest(string IdToken);
+public record UpdateEmailRequest(string NewEmail);
 
 public record AuthResponse(Guid UserId, string AccessToken, string RefreshToken, int ExpiresIn, string Role);
 

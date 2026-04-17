@@ -30,4 +30,7 @@ interface AuthApi {
 
     @POST("api/auth/google")
     suspend fun googleLogin(@Body request: GoogleLoginRequest): AuthResponse
+
+    @retrofit2.http.PUT("api/auth/update-email")
+    suspend fun updateEmail(@Body request: Map<String, String>): MessageResponse
 }

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
@@ -74,6 +75,7 @@ fun SettingsScreen(
     val cs = MaterialTheme.colorScheme
     val context = LocalContext.current
     val isDarkMode by ThemeManager.isDarkMode.collectAsState()
+    var showEmailDialog by remember { mutableStateOf(false) }
     // Permission launcher for Android 13+ notifications
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -207,6 +209,16 @@ fun SettingsScreen(
             }
         }
 
+        // Account Section
+        item {
+            SectionTitle("Tài khoản")
+            SettingsCard {
+                SettingsItem(Icons.Default.Email, "Thay đổi email", uiState.user?.email) {
+                    showEmailDialog = true
+                }
+            }
+        }
+
         // About Section
         item {
             SectionTitle("Khác")
@@ -239,6 +251,85 @@ fun SettingsScreen(
         }
 
         item { Spacer(Modifier.height(20.dp)) }
+    }
+
+    // ── Change Email Dialog ──
+    if (showEmailDialog) {
+        var newEmail by remember { mutableStateOf(uiState.user?.email ?: "") }
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = {
+                showEmailDialog = false
+                viewModel.clearEmailResult()
+            },
+            containerColor = cs.surface,
+            icon = {
+                Icon(Icons.Default.Email, null, tint = cs.primary, modifier = Modifier.size(28.dp))
+            },
+            title = {
+                Text("Thay đổi email", fontWeight = FontWeight.Bold, color = cs.onSurface)
+            },
+            text = {
+                Column {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = newEmail,
+                        onValueChange = { newEmail = it },
+                        label = { Text("Email mới") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = cs.primary,
+                            cursorColor = cs.primary,
+                            focusedTextColor = cs.onSurface,
+                            unfocusedTextColor = cs.onSurface
+                        )
+                    )
+                    if (uiState.emailUpdateError != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(uiState.emailUpdateError!!, color = cs.error, fontSize = 13.sp)
+                    }
+                    if (uiState.emailUpdateResult != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(uiState.emailUpdateResult!!, color = cs.primary, fontSize = 13.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.Button(
+                    onClick = { viewModel.updateEmail(newEmail) },
+                    enabled = !uiState.isUpdatingEmail && newEmail.isNotBlank(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = cs.primary)
+                ) {
+                    if (uiState.isUpdatingEmail) {
+                        CircularProgressIndicator(
+                            Modifier.size(16.dp),
+                            color = cs.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Lưu", fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showEmailDialog = false
+                    viewModel.clearEmailResult()
+                }) {
+                    Text("Hủy", color = cs.onSurfaceVariant)
+                }
+            }
+        )
+    }
+
+    // Auto-close dialog on success
+    LaunchedEffect(uiState.emailUpdateResult) {
+        if (uiState.emailUpdateResult != null) {
+            kotlinx.coroutines.delay(1500)
+            showEmailDialog = false
+            viewModel.clearEmailResult()
+        }
     }
 }
 

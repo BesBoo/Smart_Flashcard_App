@@ -63,6 +63,26 @@ public class AuthService
     }
 
     // ══════════════════════════════════════════════════════════
+    //  UPDATE EMAIL
+    // ══════════════════════════════════════════════════════════
+
+    public async Task UpdateEmailAsync(Guid userId, string newEmail)
+    {
+        var user = await _db.Users.FindAsync(userId)
+            ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
+
+        // Check if new email is already taken
+        var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == newEmail && u.Id != userId);
+        if (existing != null)
+            throw new InvalidOperationException("CONFLICT:Email này đã được sử dụng bởi tài khoản khác.");
+
+        user.Email = newEmail;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        _logger.LogInformation("Email updated for user {UserId} to {Email}", userId, newEmail);
+    }
+
+    // ══════════════════════════════════════════════════════════
     //  FORGOT / RESET PASSWORD
     // ══════════════════════════════════════════════════════════
 

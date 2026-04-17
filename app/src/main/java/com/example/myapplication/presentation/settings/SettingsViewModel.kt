@@ -23,7 +23,10 @@ data class SettingsUiState(
     val reviewCardsPerDay: Int = 150,
     val reminderEnabled: Boolean = false,
     val reminderHour: Int = 20,
-    val reminderMinute: Int = 0
+    val reminderMinute: Int = 0,
+    val emailUpdateResult: String? = null,
+    val emailUpdateError: String? = null,
+    val isUpdatingEmail: Boolean = false
 )
 
 @HiltViewModel
@@ -92,6 +95,37 @@ class SettingsViewModel @Inject constructor(
         if (_uiState.value.reminderEnabled) {
             reminderScheduler.schedule(hour, minute)
         }
+    }
+
+    fun updateEmail(newEmail: String) {
+        if (newEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            _uiState.update { it.copy(emailUpdateError = "Email không hợp lệ") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingEmail = true, emailUpdateError = null, emailUpdateResult = null) }
+            try {
+                val msg = userRepository.updateEmail(newEmail)
+                _uiState.update {
+                    it.copy(
+                        isUpdatingEmail = false,
+                        emailUpdateResult = msg,
+                        user = it.user?.copy(email = newEmail)
+                    )
+                }
+            } catch (e: Exception) {
+                val errorMsg = when {
+                    e.message?.contains("đã được sử dụng") == true -> "Email này đã được sử dụng bởi tài khoản khác."
+                    e.message?.contains("Failed to connect") == true -> "Không thể kết nối máy chủ."
+                    else -> e.localizedMessage ?: "Đã xảy ra lỗi"
+                }
+                _uiState.update { it.copy(isUpdatingEmail = false, emailUpdateError = errorMsg) }
+            }
+        }
+    }
+
+    fun clearEmailResult() {
+        _uiState.update { it.copy(emailUpdateResult = null, emailUpdateError = null) }
     }
 
     fun logout() {

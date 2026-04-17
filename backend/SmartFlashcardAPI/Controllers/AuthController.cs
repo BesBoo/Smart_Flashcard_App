@@ -82,4 +82,18 @@ public class AuthController : BaseController
         }
         catch (Exception ex) { return HandleError(ex); }
     }
+
+    /// <summary>PUT /api/auth/update-email — Change user email (requires auth)</summary>
+    [HttpPut("update-email")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            await _authService.UpdateEmailAsync(userId, request.NewEmail);
+            return Ok(new { message = "Email đã được cập nhật thành công." });
+        }
+        catch (Exception ex) { return HandleError(ex); }
+    }
 }

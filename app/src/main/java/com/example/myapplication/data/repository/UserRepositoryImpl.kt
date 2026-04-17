@@ -201,4 +201,19 @@ class UserRepositoryImpl @Inject constructor(
 
         return LoginResult(response.userId, role)
     }
+
+    // ── Update Email ──────────────────────────────────────────
+
+    override suspend fun updateEmail(newEmail: String): String {
+        val response = authApi.updateEmail(mapOf("newEmail" to newEmail))
+        // Update local DB
+        val userId = getCurrentUserId()
+        if (userId != null) {
+            val user = getCurrentUser()
+            if (user != null) {
+                saveUserLocally(user.copy(email = newEmail))
+            }
+        }
+        return response.message
+    }
 }
