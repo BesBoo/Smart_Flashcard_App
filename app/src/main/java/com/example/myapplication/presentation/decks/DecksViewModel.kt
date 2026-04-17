@@ -67,6 +67,18 @@ class DecksViewModel @Inject constructor(
         }
     }
 
+    /** Re-sync decks from server (called when screen becomes visible) */
+    fun refresh() {
+        viewModelScope.launch {
+            val userId = userRepository.getCurrentUserId() ?: return@launch
+            try {
+                deckRepository.syncDecks(userId)
+            } catch (_: Exception) {
+                // Offline — keep local data
+            }
+        }
+    }
+
     private fun checkViolations() {
         viewModelScope.launch {
             try {

@@ -112,6 +112,18 @@ fun DeckDetailScreen(
     val isOwner = deck?.isOwner != false
     val canEdit = isOwner || deck?.permission == "edit"
 
+    // Auto-refresh from server when screen becomes visible
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshFromServer()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     // Excel file picker
     val excelPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -618,8 +630,9 @@ private fun StudyHeaderCard(
             Column {
                 Text("Sẵn sàng ôn tập!", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
                 Spacer(Modifier.height(4.dp))
+                val studyTotal = newCount + dueCount
                 Text(
-                    text = if (dueCount > 0) "$dueCount thẻ cần ôn tập" else "Không có thẻ cần ôn!",
+                    text = if (studyTotal > 0) "$studyTotal thẻ cần ôn tập" else "Không có thẻ cần ôn!",
                     color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(16.dp))
