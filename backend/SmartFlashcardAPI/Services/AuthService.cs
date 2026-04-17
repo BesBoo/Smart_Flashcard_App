@@ -72,7 +72,7 @@ public class AuthService
         if (user == null)
         {
             _logger.LogWarning("ForgotPassword: email not found: {Email}", email);
-            return; // Don't reveal whether the email exists
+            throw new InvalidOperationException("Email này chưa được đăng ký. Vui lòng kiểm tra lại.");
         }
 
         // Invalidate existing tokens

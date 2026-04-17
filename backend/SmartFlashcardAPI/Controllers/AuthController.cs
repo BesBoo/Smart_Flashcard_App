@@ -54,7 +54,7 @@ public class AuthController : BaseController
         try
         {
             await _authService.ForgotPasswordAsync(request.Email);
-            return Ok(new { message = "Nếu email tồn tại, mã OTP đã được gửi." });
+            return Ok(new { message = "Mã OTP đã được gửi tới email của bạn." });
         }
         catch (Exception ex) { return HandleError(ex); }
     }

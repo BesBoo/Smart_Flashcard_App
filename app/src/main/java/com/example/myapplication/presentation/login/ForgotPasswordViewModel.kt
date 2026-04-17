@@ -49,6 +49,7 @@ class ForgotPasswordViewModel @Inject constructor(
             } catch (e: Exception) {
                 val errorMsg = when {
                     e.message?.contains("Failed to connect") == true -> "Không thể kết nối máy chủ."
+                    e.message?.contains("chưa được đăng ký") == true -> "Email này chưa được đăng ký. Vui lòng kiểm tra lại."
                     else -> e.localizedMessage ?: "Đã xảy ra lỗi"
                 }
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
