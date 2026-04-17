@@ -43,7 +43,7 @@ data class DeckDetailUiState(
     val showSheetDialog: Boolean = false
 ) {
     val totalCards: Int get() = flashcards.size
-    val dueCount: Int get() = dueCards.size
+    val dueCount: Int get() = dueCards.count { !it.isNew }  // Only previously reviewed cards that are due
     val newCount: Int get() = flashcards.count { it.isNew }
     val masteredCount: Int get() = flashcards.count { it.sm2.repetition >= 3 && it.sm2.easeFactor >= 2.5 }
     val filteredFlashcards: List<Flashcard> get() {
