@@ -24,6 +24,22 @@ class DeckRepositoryImpl @Inject constructor(
     private val flashcardApi: FlashcardApi
 ) : DeckRepository {
 
+    /** Parse nextReviewDate from server: handles Long millis, ISO with Z, and ISO without Z */
+    private fun parseNextReviewDate(value: String?): Long {
+        if (value.isNullOrBlank()) return System.currentTimeMillis()
+        return try {
+            value.toLongOrNull()
+                ?: java.time.Instant.parse(
+                    if (value.endsWith("Z") || value.contains("+") || value.lastIndexOf('-') > 9)
+                        value
+                    else
+                        "${value}Z"  // Server sometimes omits Z — assume UTC
+                ).toEpochMilli()
+        } catch (_: Exception) {
+            System.currentTimeMillis()
+        }
+    }
+
     override fun observeDecksByUser(userId: String): Flow<List<Deck>> =
         // Combine decks with flashcard count so the list re-emits when cards change
         combine(
@@ -158,13 +174,7 @@ class DeckRepositoryImpl @Inject constructor(
                                 repetition = dto.repetition,
                                 intervalDays = dto.intervalDays,
                                 easeFactor = dto.easeFactor,
-                                nextReviewDate = try {
-                                    // Try as Long (millis) first, then as ISO 8601 date
-                                    dto.nextReviewDate.toLongOrNull()
-                                        ?: java.time.Instant.parse(dto.nextReviewDate).toEpochMilli()
-                                } catch (_: Exception) {
-                                    System.currentTimeMillis()
-                                },
+                                nextReviewDate = parseNextReviewDate(dto.nextReviewDate),
                                 failCount = dto.failCount,
                                 totalReviews = dto.totalReviews
                             )
@@ -235,13 +245,7 @@ class DeckRepositoryImpl @Inject constructor(
                         repetition = dto.repetition,
                         intervalDays = dto.intervalDays,
                         easeFactor = dto.easeFactor,
-                        nextReviewDate = try {
-                            // Try as Long (millis) first, then as ISO 8601 date
-                            dto.nextReviewDate.toLongOrNull()
-                                ?: java.time.Instant.parse(dto.nextReviewDate).toEpochMilli()
-                        } catch (_: Exception) {
-                            System.currentTimeMillis()
-                        },
+                        nextReviewDate = parseNextReviewDate(dto.nextReviewDate),
                         failCount = dto.failCount,
                         totalReviews = dto.totalReviews
                     )
