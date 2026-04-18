@@ -204,8 +204,8 @@ class DeckRepositoryImpl @Inject constructor(
                             )
                         }
                     }
-                } catch (_: Exception) {
-                    // Skip card sync for this deck if it fails
+                } catch (e: Exception) {
+                    android.util.Log.e("DeckRepo", "Card sync failed for deck ${deck.id}: ${e.message}", e)
                 }
             }
         } catch (_: Exception) {

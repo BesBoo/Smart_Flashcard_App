@@ -129,8 +129,8 @@ class FlashcardRepositoryImpl @Inject constructor(
                     )
                 )
             }
-        } catch (_: Exception) {
-            // Offline — server will sync later
+        } catch (e: Exception) {
+            android.util.Log.e("FlashcardRepo", "SM2 sync to server FAILED for card=$cardId: ${e.message}", e)
         }
     }
 
