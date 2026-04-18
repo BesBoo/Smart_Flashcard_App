@@ -1,0 +1,16 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    # Every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping server
+        run: |
+          curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" https://smart-flashcard-app-i96u.onrender.com/api/auth/update-email || true
+          echo "Ping completed at $(date)"

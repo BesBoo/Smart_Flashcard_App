@@ -124,7 +124,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Ứng dụng thẻ ghi nớ",
+                text = "Ứng dụng thẻ ghi nhớ",
                 fontSize = 14.sp,
                 color = TextGrey,
                 modifier = Modifier.padding(top = 6.dp)
