@@ -123,7 +123,7 @@ class FlashcardRepositoryImpl @Inject constructor(
                         repetition = repetition,
                         intervalDays = intervalDays,
                         easeFactor = easeFactor,
-                        nextReviewDate = nextReviewDate.toString(),
+                        nextReviewDate = java.time.Instant.ofEpochMilli(nextReviewDate).toString(),
                         failCount = card.failCount,
                         totalReviews = card.totalReviews
                     )

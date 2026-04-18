@@ -159,7 +159,9 @@ class DeckRepositoryImpl @Inject constructor(
                                 intervalDays = dto.intervalDays,
                                 easeFactor = dto.easeFactor,
                                 nextReviewDate = try {
-                                    dto.nextReviewDate.toLong()
+                                    // Try as Long (millis) first, then as ISO 8601 date
+                                    dto.nextReviewDate.toLongOrNull()
+                                        ?: java.time.Instant.parse(dto.nextReviewDate).toEpochMilli()
                                 } catch (_: Exception) {
                                     System.currentTimeMillis()
                                 },
@@ -234,7 +236,9 @@ class DeckRepositoryImpl @Inject constructor(
                         intervalDays = dto.intervalDays,
                         easeFactor = dto.easeFactor,
                         nextReviewDate = try {
-                            dto.nextReviewDate.toLong()
+                            // Try as Long (millis) first, then as ISO 8601 date
+                            dto.nextReviewDate.toLongOrNull()
+                                ?: java.time.Instant.parse(dto.nextReviewDate).toEpochMilli()
                         } catch (_: Exception) {
                             System.currentTimeMillis()
                         },
