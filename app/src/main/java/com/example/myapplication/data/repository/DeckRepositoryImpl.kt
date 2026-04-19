@@ -153,6 +153,17 @@ class DeckRepositoryImpl @Inject constructor(
                 }
             }
 
+            // Step 1b: Cleanup — soft-delete local decks no longer on server
+            // (e.g. owner deleted a shared deck → subscriber should stop seeing it)
+            val remoteIds = remoteDecks.map { it.id }.toSet()
+            val localDecks = deckDao.getDecksByUser(userId)
+            for (local in localDecks) {
+                if (local.id !in remoteIds) {
+                    android.util.Log.d("DeckRepo", "syncDecks: removing stale deck ${local.id} (${local.name})")
+                    deckDao.softDeleteDeck(local.id)
+                }
+            }
+
             // Step 2: Sync flashcards for each deck from server
             for (deck in remoteDecks) {
                 try {

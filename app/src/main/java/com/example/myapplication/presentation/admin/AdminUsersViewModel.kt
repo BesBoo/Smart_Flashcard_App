@@ -33,6 +33,8 @@ class AdminUsersViewModel @Inject constructor(
 
     init { loadUsers() }
 
+    fun refresh() { loadUsers(_uiState.value.searchQuery.ifBlank { null }) }
+
     fun search(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         loadUsers(query)

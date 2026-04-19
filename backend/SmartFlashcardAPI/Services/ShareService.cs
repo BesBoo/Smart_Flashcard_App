@@ -192,11 +192,14 @@ public class ShareService
     public async Task LeaveSharedDeckAsync(Guid userId, Guid deckId)
     {
         var sub = await _db.DeckSubscriptions
-            .FirstOrDefaultAsync(s => s.DeckId == deckId && s.SubscriberId == userId && s.IsActive)
-            ?? throw new KeyNotFoundException("Subscription not found");
+            .FirstOrDefaultAsync(s => s.DeckId == deckId && s.SubscriberId == userId && s.IsActive);
 
-        sub.IsActive = false;
-        await _db.SaveChangesAsync();
+        if (sub != null)
+        {
+            sub.IsActive = false;
+            await _db.SaveChangesAsync();
+        }
+        // If sub is null or already deactivated (e.g. owner deleted deck), just return OK
     }
 
     /// <summary>
