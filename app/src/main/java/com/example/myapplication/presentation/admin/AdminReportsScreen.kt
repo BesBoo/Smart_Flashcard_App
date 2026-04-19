@@ -39,6 +39,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,6 +69,7 @@ private data class ReportConfirmAction(
     val onConfirm: () -> Unit
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminReportsScreen(
     modifier: Modifier = Modifier,
@@ -122,6 +125,11 @@ fun AdminReportsScreen(
     }
 
     Box(modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.refresh() },
+            modifier = Modifier.fillMaxSize()
+        ) {
         Column(Modifier.fillMaxSize().padding(20.dp)) {
             Text("Báo cáo & Kiểm duyệt", color = cs.onSurface, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
@@ -203,6 +211,7 @@ fun AdminReportsScreen(
                 }
             }
         }
+        } // PullToRefreshBox
 
         SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }

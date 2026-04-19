@@ -28,6 +28,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.ui.theme.StreakFlame
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
     modifier: Modifier = Modifier,
@@ -49,6 +52,11 @@ fun AdminDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val cs = MaterialTheme.colorScheme
 
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { viewModel.refresh() },
+        modifier = modifier.fillMaxSize()
+    ) {
     when {
         uiState.isLoading && uiState.stats == null -> {
             Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -262,6 +270,7 @@ fun AdminDashboardScreen(
             }
         }
     }
+    } // PullToRefreshBox
 }
 
 // ─── KPI Card: Số to → Label nhỏ ───

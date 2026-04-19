@@ -133,7 +133,10 @@ class DeckRepositoryImpl @Inject constructor(
                 }
                 cursor = if (page.hasMore) page.nextCursor else null
             } while (cursor != null)
-
+            android.util.Log.d("DeckRepo", "syncDecks: fetched ${remoteDecks.size} decks from server")
+            val ownCount = remoteDecks.count { it.isOwner }
+            val subCount = remoteDecks.count { !it.isOwner }
+            android.util.Log.d("DeckRepo", "syncDecks: $ownCount own + $subCount subscribed")
             if (remoteDecks.isNotEmpty()) {
                 // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
                 val entities = remoteDecks.map { it.toEntity() }
@@ -218,8 +221,8 @@ class DeckRepositoryImpl @Inject constructor(
                     android.util.Log.e("DeckRepo", "Card sync failed for deck ${deck.id}: ${e.message}", e)
                 }
             }
-        } catch (_: Exception) {
-            // Offline — keep existing Room data
+        } catch (e: Exception) {
+            android.util.Log.e("DeckRepo", "syncDecks FAILED: ${e.message}", e)
         }
     }
     override suspend fun syncFlashcardsForDeck(deckId: String, userId: String) {

@@ -257,11 +257,11 @@ public class AdminService
     {
         var deck = await _db.Decks
             .Include(d => d.User)
-            .FirstOrDefaultAsync(d => d.Id == deckId && !d.IsDeleted)
+            .FirstOrDefaultAsync(d => d.Id == deckId)
             ?? throw new KeyNotFoundException($"Deck {deckId} not found");
 
         var cards = await _db.Flashcards
-            .Where(f => f.DeckId == deckId && !f.IsDeleted)
+            .Where(f => f.DeckId == deckId)
             .OrderBy(f => f.CreatedAt)
             .Select(f => new AdminCardPreview(
                 f.Id, f.FrontText, f.BackText, f.ExampleText, f.ImageUrl

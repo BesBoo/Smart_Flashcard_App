@@ -206,7 +206,7 @@ fun AiGenerateScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Chọn file PDF hoặc DOCX để AI tự động tạo flashcard hoặc trích xuất từ vựng.",
+                            text = "Chọn file PDF hoặc DOCX để tự động tạo flashcard hoặc trích xuất từ vựng.",
                             color = cs.onSurfaceVariant,
                             fontSize = 13.sp
                         )
@@ -224,7 +224,7 @@ fun AiGenerateScreen(
                             ) {
                                 Icon(Icons.Default.PictureAsPdf, null, modifier = Modifier.size(18.dp), tint = cs.error)
                                 Spacer(Modifier.width(6.dp))
-                                Text("Chọn PDF", fontSize = 13.sp)
+                                Text("Chọn file PDF", fontSize = 13.sp)
                             }
 
                             OutlinedButton(
@@ -240,7 +240,7 @@ fun AiGenerateScreen(
                             ) {
                                 Icon(Icons.Default.Description, null, modifier = Modifier.size(18.dp), tint = cs.primary)
                                 Spacer(Modifier.width(6.dp))
-                                Text("Chọn DOCX", fontSize = 13.sp)
+                                Text("Chọn file DOCX", fontSize = 13.sp)
                             }
                         }
 
@@ -414,7 +414,7 @@ fun AiGenerateScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Dán đoạn văn, ghi chú, hoặc nội dung bài học. AI sẽ tự động tạo flashcard cho bạn.",
+                            text = "Dán đoạn văn, ghi chú, hoặc nội dung bài học. Hệ thôngs sẽ tự động tạo flashcard cho bạn.",
                             color = cs.onSurfaceVariant,
                             fontSize = 13.sp
                         )
@@ -467,7 +467,7 @@ fun AiGenerateScreen(
                         Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
                         val label = when {
-                            uiState.inputMode == InputMode.TEXT -> "Tạo Flashcard bằng AI"
+                            uiState.inputMode == InputMode.TEXT -> "Tạo Flashcard tự động"
                             uiState.generationMode == GenerationMode.EXTRACT_VOCAB -> "Trích xuất từ vựng"
                             uiState.inputMode == InputMode.PDF -> "Tạo từ PDF"
                             else -> "Tạo từ DOCX"
