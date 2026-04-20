@@ -601,7 +601,7 @@ fun FlashcardEditorScreen(
 
                 // ── Save button ──
                 Button(
-                    onClick = { viewModel.save() },
+                    onClick = { syncToViewModel(); viewModel.save() },
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     shape = RoundedCornerShape(14.dp),

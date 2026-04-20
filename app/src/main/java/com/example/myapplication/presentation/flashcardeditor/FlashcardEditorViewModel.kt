@@ -380,13 +380,25 @@ class FlashcardEditorViewModel @Inject constructor(
                 // (isSaved triggers navigation, which would cancel this coroutine)
                 val imageUrl = state.imageUrl
                 if (!imageUrl.isNullOrBlank() && state.frontText.isNotBlank()) {
+                    // Extract base keyword: strip parenthetical suffixes
+                    // e.g. "light (noun)" → "light", "run (verb)" → "run"
+                    val rawKeyword = state.frontText.trim()
+                    val baseKeyword = rawKeyword.replace(Regex("\\s*\\(.*\\)\\s*$"), "").trim()
+
                     try {
                         if (imageUrl.startsWith("http")) {
-                            android.util.Log.d("SharedImg", "Sharing HTTP image: keyword='${state.frontText.trim()}' url=$imageUrl")
+                            android.util.Log.d("SharedImg", "Sharing HTTP image: keyword='$baseKeyword' url=$imageUrl")
                             sharedImageApi.share(ShareImageRequest(
-                                keyword = state.frontText.trim(),
+                                keyword = baseKeyword,
                                 imageUrl = imageUrl
                             ))
+                            // Also share with full keyword if different (for polysemy cards)
+                            if (baseKeyword != rawKeyword) {
+                                sharedImageApi.share(ShareImageRequest(
+                                    keyword = rawKeyword,
+                                    imageUrl = imageUrl
+                                ))
+                            }
                             android.util.Log.d("SharedImg", "Share succeeded")
                         } else {
                             val file = File(imageUrl)
@@ -395,10 +407,17 @@ class FlashcardEditorViewModel @Inject constructor(
                                 val filePart = okhttp3.MultipartBody.Part.createFormData(
                                     "file", file.name, requestBody
                                 )
-                                val keywordPart = state.frontText.trim()
+                                val keywordPart = baseKeyword
                                     .toRequestBody("text/plain".toMediaType())
-                                sharedImageApi.uploadImage(filePart, keywordPart)
-                                android.util.Log.d("SharedImg", "Upload succeeded for keyword='${state.frontText.trim()}'")
+                                val response = sharedImageApi.uploadImage(filePart, keywordPart)
+                                android.util.Log.d("SharedImg", "Upload succeeded for keyword='$baseKeyword'")
+                                // Also share with full keyword if different
+                                if (baseKeyword != rawKeyword) {
+                                    sharedImageApi.share(ShareImageRequest(
+                                        keyword = rawKeyword,
+                                        imageUrl = response.imageUrl
+                                    ))
+                                }
                             }
                         }
                     } catch (e: Exception) {
