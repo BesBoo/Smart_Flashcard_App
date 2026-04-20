@@ -467,7 +467,7 @@ fun AiGenerateScreen(
                         Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
                         val label = when {
-                            uiState.inputMode == InputMode.TEXT -> "Tạo Flashcard tự động"
+                            uiState.inputMode == InputMode.TEXT -> "Tạo Flashcard tự động`"
                             uiState.generationMode == GenerationMode.EXTRACT_VOCAB -> "Trích xuất từ vựng"
                             uiState.inputMode == InputMode.PDF -> "Tạo từ PDF"
                             else -> "Tạo từ DOCX"

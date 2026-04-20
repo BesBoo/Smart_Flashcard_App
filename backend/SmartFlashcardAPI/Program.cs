@@ -79,6 +79,32 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ── Auto-migrate database on startup ────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+
+    // Ensure SharedImages table exists (was missing from initial migration)
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""SharedImages"" (
+            ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+            ""UserId"" uuid NOT NULL,
+            ""Keyword"" character varying(200) NOT NULL,
+            ""ImageUrl"" character varying(500) NOT NULL,
+            ""UsageCount"" integer NOT NULL DEFAULT 0,
+            ""IsDeleted"" boolean NOT NULL DEFAULT false,
+            ""CreatedAt"" timestamp without time zone NOT NULL DEFAULT now(),
+            CONSTRAINT ""PK_SharedImages"" PRIMARY KEY (""Id""),
+            CONSTRAINT ""FK_SharedImages_Users_UserId"" FOREIGN KEY (""UserId"")
+                REFERENCES ""Users"" (""Id"") ON DELETE NO ACTION
+        );
+        CREATE INDEX IF NOT EXISTS ""IX_SharedImages_Keyword""
+            ON ""SharedImages"" (""Keyword"") WHERE ""IsDeleted"" = false;
+    ");
+    app.Logger.LogInformation("Database migration applied.");
+}
+
 // ── Middleware Pipeline ─────────────────────────────────────
 // NFR-S01: Enforce HTTPS in production (TLS 1.2+)
 if (!app.Environment.IsDevelopment())

@@ -382,10 +382,12 @@ class FlashcardEditorViewModel @Inject constructor(
                 if (!imageUrl.isNullOrBlank() && state.frontText.isNotBlank()) {
                     try {
                         if (imageUrl.startsWith("http")) {
+                            android.util.Log.d("SharedImg", "Sharing HTTP image: keyword='${state.frontText.trim()}' url=$imageUrl")
                             sharedImageApi.share(ShareImageRequest(
                                 keyword = state.frontText.trim(),
                                 imageUrl = imageUrl
                             ))
+                            android.util.Log.d("SharedImg", "Share succeeded")
                         } else {
                             val file = File(imageUrl)
                             if (file.exists()) {
@@ -396,9 +398,11 @@ class FlashcardEditorViewModel @Inject constructor(
                                 val keywordPart = state.frontText.trim()
                                     .toRequestBody("text/plain".toMediaType())
                                 sharedImageApi.uploadImage(filePart, keywordPart)
+                                android.util.Log.d("SharedImg", "Upload succeeded for keyword='${state.frontText.trim()}'")
                             }
                         }
-                    } catch (_: Exception) { /* non-critical */
+                    } catch (e: Exception) {
+                        android.util.Log.e("SharedImg", "Share/upload FAILED: ${e.message}", e)
                     }
                 }
 
@@ -470,8 +474,10 @@ class FlashcardEditorViewModel @Inject constructor(
         _uiState.update { it.copy(isLoadingSuggestions = true) }
         try {
             val results = sharedImageApi.search(keyword, 10)
+            android.util.Log.d("SharedImg", "Search '$keyword' → ${results.size} results")
             _uiState.update { it.copy(suggestedImages = results, isLoadingSuggestions = false) }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("SharedImg", "Search FAILED for '$keyword': ${e.message}")
             _uiState.update { it.copy(suggestedImages = emptyList(), isLoadingSuggestions = false) }
         }
     }
