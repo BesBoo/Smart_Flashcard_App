@@ -104,7 +104,7 @@ fun LoginScreen(
             // ── App Logo ──
 
             Image(
-                painter = painterResource(id = R.drawable.icon_app), // tên file ảnh của bạn
+                painter = painterResource(id = R.drawable.flashcard_launcher_playstore), // tên file ảnh của bạn
                 contentDescription = "App Logo",
                 modifier = Modifier
                     .size(56.dp)  // nhỏ hơn Box một chút để có padding

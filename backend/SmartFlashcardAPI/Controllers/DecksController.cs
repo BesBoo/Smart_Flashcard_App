@@ -118,4 +118,16 @@ public class DecksController : BaseController
         }
         catch (Exception ex) { return HandleError(ex); }
     }
+
+    /// <summary>POST /api/decks/violations/dismiss — Mark all violation notices as acknowledged.</summary>
+    [HttpPost("violations/dismiss")]
+    public async Task<IActionResult> DismissViolations()
+    {
+        try
+        {
+            await _deckService.DismissViolationNoticesAsync(GetUserId());
+            return Ok(new { message = "Dismissed" });
+        }
+        catch (Exception ex) { return HandleError(ex); }
+    }
 }

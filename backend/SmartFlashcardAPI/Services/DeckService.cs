@@ -168,6 +168,7 @@ public class DeckService
             join d in _db.Decks on r.TargetId equals d.Id
             where r.TargetType == "Deck"
                && r.Status == "Approved"
+               && !r.IsNotifiedToOwner
                && d.UserId == userId
                && d.IsDeleted
             orderby r.UpdatedAt descending
@@ -175,5 +176,26 @@ public class DeckService
         ).ToListAsync();
 
         return notices.Select(n => new ViolationNotice(n.Id, n.Name, n.Reason, n.UpdatedAt)).ToList();
+    }
+
+    /// <summary>Mark violation notices as acknowledged so they won't show again.</summary>
+    public async Task DismissViolationNoticesAsync(Guid userId)
+    {
+        var reportIds = await (
+            from r in _db.ContentReports
+            join d in _db.Decks on r.TargetId equals d.Id
+            where r.TargetType == "Deck"
+               && r.Status == "Approved"
+               && !r.IsNotifiedToOwner
+               && d.UserId == userId
+               && d.IsDeleted
+            select r
+        ).ToListAsync();
+
+        foreach (var report in reportIds)
+        {
+            report.IsNotifiedToOwner = true;
+        }
+        await _db.SaveChangesAsync();
     }
 }

@@ -30,6 +30,9 @@ public class ContentReport
     [Required, MaxLength(20)]
     public string Status { get; set; } = "Pending";
 
+    /// <summary>True after the deck owner has acknowledged the violation notice.</summary>
+    public bool IsNotifiedToOwner { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

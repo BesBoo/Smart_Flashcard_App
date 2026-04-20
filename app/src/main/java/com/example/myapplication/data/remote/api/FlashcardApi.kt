@@ -46,6 +46,9 @@ interface FlashcardApi {
     @GET("api/decks/violations")
     suspend fun getViolations(): List<ViolationNotice>
 
+    @POST("api/decks/violations/dismiss")
+    suspend fun dismissViolations()
+
     // ── Flashcards ──
 
     @GET("api/decks/{deckId}/cards")

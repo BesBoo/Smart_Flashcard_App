@@ -102,6 +102,12 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_SharedImages_Keyword""
             ON ""SharedImages"" (""Keyword"") WHERE ""IsDeleted"" = false;
     ");
+
+    // Add IsNotifiedToOwner to ContentReports (for violation notice dismiss)
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""ContentReports""
+            ADD COLUMN IF NOT EXISTS ""IsNotifiedToOwner"" boolean NOT NULL DEFAULT false;
+    ");
     app.Logger.LogInformation("Database migration applied.");
 }
 

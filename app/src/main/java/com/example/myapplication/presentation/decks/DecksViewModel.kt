@@ -98,6 +98,12 @@ class DecksViewModel @Inject constructor(
 
     fun dismissViolationDialog() {
         _uiState.update { it.copy(showViolationDialog = false) }
+        // Mark violations as acknowledged on server so they won't show again
+        viewModelScope.launch {
+            try {
+                flashcardApi.dismissViolations()
+            } catch (_: Exception) { /* non-critical */ }
+        }
     }
 
     fun createDeck(name: String, description: String, coverImageUrl: String? = null) {
