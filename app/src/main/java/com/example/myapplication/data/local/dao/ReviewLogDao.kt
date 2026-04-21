@@ -60,4 +60,8 @@ interface ReviewLogDao {
 
     @Query("DELETE FROM review_logs WHERE userId = :userId")
     suspend fun deleteAllByUser(userId: String)
+
+    // All review logs for a user (for push-pending sync)
+    @Query("SELECT * FROM review_logs WHERE userId = :userId")
+    suspend fun getAllReviewLogsByUser(userId: String): List<ReviewLogEntity>
 }

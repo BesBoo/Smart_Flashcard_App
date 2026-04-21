@@ -73,10 +73,48 @@ class ReviewLogRepositoryImpl @Inject constructor(
      */
     override suspend fun syncReviewLogs(userId: String) {
         try {
+            // ── Step 1: PUSH pending local reviews to server ──
+            // Some reviews may have failed to push (offline, network error).
+            // Get server review IDs, then push any local-only reviews.
             val remoteReviews = flashcardApi.getReviews()
-            android.util.Log.d("ReviewLogRepo", "syncReviewLogs: got ${remoteReviews.size} reviews from server")
-            if (remoteReviews.isNotEmpty()) {
-                val entities = remoteReviews.map { dto ->
+            val remoteIds = remoteReviews.map { it.id }.toSet()
+            val localReviews = reviewLogDao.getAllReviewLogsByUser(userId)
+
+            android.util.Log.d("ReviewLogRepo", "syncReviewLogs: server=${remoteReviews.size}, local=${localReviews.size}")
+
+            var pushCount = 0
+            for (local in localReviews) {
+                if (local.id !in remoteIds) {
+                    // This review exists locally but NOT on server → push it
+                    try {
+                        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                        isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+                        val dateStr = isoFormat.format(Date(local.reviewedAt))
+
+                        flashcardApi.createReview(
+                            CreateReviewRequest(
+                                id = local.id,
+                                flashcardId = local.flashcardId,
+                                quality = local.quality,
+                                responseTimeMs = local.responseTimeMs,
+                                reviewedAt = dateStr
+                            )
+                        )
+                        pushCount++
+                    } catch (_: Exception) {
+                        // Server rejected (FK violation, duplicate, etc.) — skip
+                    }
+                }
+            }
+            if (pushCount > 0) {
+                android.util.Log.d("ReviewLogRepo", "syncReviewLogs: pushed $pushCount pending reviews to server")
+            }
+
+            // ── Step 2: PULL all reviews from server (re-fetch after push) ──
+            val allRemoteReviews = if (pushCount > 0) flashcardApi.getReviews() else remoteReviews
+
+            if (allRemoteReviews.isNotEmpty()) {
+                val entities = allRemoteReviews.map { dto ->
                     ReviewLogEntity(
                         id = dto.id,
                         userId = userId,
@@ -92,22 +130,17 @@ class ReviewLogRepositoryImpl @Inject constructor(
                         }
                     )
                 }
-                // Insert in small batches to avoid FK constraint crashing the whole batch
-                val batchSize = 500
-                for (batch in entities.chunked(batchSize)) {
+                // Insert in small batches with IGNORE to avoid FK constraint issues
+                for (batch in entities.chunked(500)) {
                     try {
                         reviewLogDao.insertReviewLogsIgnore(batch)
                     } catch (e: Exception) {
-                        android.util.Log.w("ReviewLogRepo", "Batch insert failed, trying one-by-one: ${e.message}")
-                        // Fallback: insert one-by-one to skip FK-violating rows
                         for (entity in batch) {
-                            try {
-                                reviewLogDao.insertReviewLogIgnore(entity)
-                            } catch (_: Exception) { /* skip invalid row */ }
+                            try { reviewLogDao.insertReviewLogIgnore(entity) } catch (_: Exception) {}
                         }
                     }
                 }
-                android.util.Log.d("ReviewLogRepo", "syncReviewLogs: processed ${entities.size} logs")
+                android.util.Log.d("ReviewLogRepo", "syncReviewLogs: synced ${entities.size} total reviews")
             }
         } catch (e: Exception) {
             android.util.Log.e("ReviewLogRepo", "syncReviewLogs FAILED: ${e.message}", e)
