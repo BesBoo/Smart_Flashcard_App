@@ -363,36 +363,41 @@ private fun ReportRow(
             Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("${report.targetType} • ${report.createdAt.take(10)}", color = cs.onSurfaceVariant, fontSize = 12.sp)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // "Xem nội dung" button (always visible)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // "Xem" button
                     if (report.targetType == "Deck") {
                         Button(
                             onClick = onViewDeck,
                             colors = ButtonDefaults.buttonColors(containerColor = cs.primaryContainer),
-                            modifier = Modifier.height(34.dp),
-                            shape = RoundedCornerShape(8.dp)
+                            modifier = Modifier.height(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp)
                         ) {
-                            Icon(Icons.Default.Visibility, null, modifier = Modifier.size(16.dp), tint = cs.primary)
-                            Spacer(Modifier.width(4.dp))
-                            Text("Xem", color = cs.primary, fontSize = 12.sp)
+                            Icon(Icons.Default.Visibility, "Xem", modifier = Modifier.size(16.dp), tint = cs.primary)
                         }
                     }
                     if (isPending) {
+                        // Reject button (icon only)
                         Button(
                             onClick = onReject,
                             colors = ButtonDefaults.buttonColors(containerColor = cs.surfaceVariant),
-                            modifier = Modifier.height(34.dp),
-                            shape = RoundedCornerShape(8.dp)
+                            modifier = Modifier.height(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp)
                         ) {
-                            Text("Bỏ qua", color = cs.onSurface, fontSize = 12.sp)
+                            Icon(Icons.Default.Cancel, "Bỏ qua", modifier = Modifier.size(16.dp), tint = cs.onSurfaceVariant)
                         }
+                        // Approve button (icon + short text)
                         Button(
                             onClick = onApprove,
                             colors = ButtonDefaults.buttonColors(containerColor = cs.error),
-                            modifier = Modifier.height(34.dp),
-                            shape = RoundedCornerShape(8.dp)
+                            modifier = Modifier.height(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp)
                         ) {
-                            Text("Duyệt & Xóa", color = Color.White, fontSize = 12.sp)
+                            Icon(Icons.Default.CheckCircle, "Duyệt", modifier = Modifier.size(16.dp), tint = Color.White)
+                            Spacer(Modifier.width(4.dp))
+                            Text("Xóa", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
