@@ -75,6 +75,22 @@ interface DeckDao {
         isDeleted: Boolean, updatedAt: Long
     )
 
+    // Full update including userId — ensures correct ownership after multi-user sync
+    @Query("""
+        UPDATE decks SET 
+            userId = :userId, name = :name, description = :description, coverImageUrl = :coverImageUrl,
+            isOwner = :isOwner, permission = :permission, ownerName = :ownerName,
+            shareCode = :shareCode, isShared = :isShared, googleSheetUrl = :googleSheetUrl,
+            isDeleted = :isDeleted, updatedAt = :updatedAt
+        WHERE id = :id
+    """)
+    suspend fun updateDeckFieldsFull(
+        id: String, userId: String, name: String, description: String?, coverImageUrl: String?,
+        isOwner: Boolean, permission: String?, ownerName: String?,
+        shareCode: String?, isShared: Boolean, googleSheetUrl: String?,
+        isDeleted: Boolean, updatedAt: Long
+    )
+
     // Sync support
     @Query("SELECT * FROM decks WHERE userId = :userId AND updatedAt > :since")
     suspend fun getDecksUpdatedSince(userId: String, since: Long): List<DeckEntity>

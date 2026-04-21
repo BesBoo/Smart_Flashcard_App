@@ -106,9 +106,10 @@ class DeckRepositoryImpl @Inject constructor(
         }
     }
 
-    /** Save a deck to local Room DB only (no server call) — used for joined decks */
+    /** Save a deck to local Room DB only (no server call) — used for joined decks.
+     *  Uses IGNORE to avoid overwriting existing deck data (e.g. from another user on same device). */
     override suspend fun saveDeckLocally(deck: Deck) {
-        deckDao.insertDeck(deck.toEntity())
+        deckDao.insertDeckIgnore(deck.toEntity())
     }
 
     override suspend fun syncDecks(userId: String) {
@@ -147,8 +148,8 @@ class DeckRepositoryImpl @Inject constructor(
                 val entities = remoteDecks.map { it.toEntity() }
                 deckDao.insertDecksIgnore(entities)
                 for (e in entities) {
-                    deckDao.updateDeckFields(
-                        id = e.id, name = e.name, description = e.description,
+                    deckDao.updateDeckFieldsFull(
+                        id = e.id, userId = e.userId, name = e.name, description = e.description,
                         coverImageUrl = e.coverImageUrl, isOwner = e.isOwner,
                         permission = e.permission, ownerName = e.ownerName,
                         shareCode = e.shareCode, isShared = e.isShared,
