@@ -39,6 +39,25 @@ interface FlashcardDao {
         updatedAt: Long = System.currentTimeMillis()
     )
 
+    // Full update including userId — ensures correct ownership on shared devices
+    @Query("""
+        UPDATE flashcards SET 
+            userId = :userId,
+            frontText = :frontText, backText = :backText, exampleText = :exampleText,
+            imageUrl = :imageUrl, audioUrl = :audioUrl,
+            repetition = :repetition, intervalDays = :intervalDays, easeFactor = :easeFactor,
+            nextReviewDate = :nextReviewDate, failCount = :failCount, totalReviews = :totalReviews,
+            updatedAt = :updatedAt
+        WHERE id = :id
+    """)
+    suspend fun updateCardFieldsFull(
+        id: String, userId: String, frontText: String, backText: String, exampleText: String?,
+        imageUrl: String?, audioUrl: String?,
+        repetition: Int, intervalDays: Int, easeFactor: Double,
+        nextReviewDate: Long, failCount: Int, totalReviews: Int,
+        updatedAt: Long = System.currentTimeMillis()
+    )
+
     @Update
     suspend fun updateFlashcard(flashcard: FlashcardEntity)
 

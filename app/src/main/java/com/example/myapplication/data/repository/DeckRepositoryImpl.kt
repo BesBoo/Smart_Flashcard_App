@@ -225,8 +225,8 @@ class DeckRepositoryImpl @Inject constructor(
                         // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
                         flashcardDao.insertFlashcardsIgnore(mergedCards)
                         for (c in mergedCards) {
-                            flashcardDao.updateCardFields(
-                                id = c.id, frontText = c.frontText, backText = c.backText,
+                            flashcardDao.updateCardFieldsFull(
+                                id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
                                 exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
                                 repetition = c.repetition, intervalDays = c.intervalDays,
                                 easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
@@ -293,8 +293,8 @@ class DeckRepositoryImpl @Inject constructor(
                 // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
                 flashcardDao.insertFlashcardsIgnore(mergedCards)
                 for (c in mergedCards) {
-                    flashcardDao.updateCardFields(
-                        id = c.id, frontText = c.frontText, backText = c.backText,
+                    flashcardDao.updateCardFieldsFull(
+                        id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
                         exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
                         repetition = c.repetition, intervalDays = c.intervalDays,
                         easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
