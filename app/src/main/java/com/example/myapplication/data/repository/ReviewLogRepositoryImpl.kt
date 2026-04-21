@@ -74,6 +74,7 @@ class ReviewLogRepositoryImpl @Inject constructor(
     override suspend fun syncReviewLogs(userId: String) {
         try {
             val remoteReviews = flashcardApi.getReviews()
+            android.util.Log.d("ReviewLogRepo", "syncReviewLogs: got ${remoteReviews.size} reviews from server")
             if (remoteReviews.isNotEmpty()) {
                 val entities = remoteReviews.map { dto ->
                     ReviewLogEntity(
@@ -83,7 +84,6 @@ class ReviewLogRepositoryImpl @Inject constructor(
                         quality = dto.quality,
                         responseTimeMs = dto.responseTimeMs,
                         reviewedAt = try {
-                            // Parse ISO 8601 date string to timestamp
                             val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
                             format.timeZone = TimeZone.getTimeZone("UTC")
                             format.parse(dto.reviewedAt.take(19))?.time ?: System.currentTimeMillis()
@@ -92,10 +92,25 @@ class ReviewLogRepositoryImpl @Inject constructor(
                         }
                     )
                 }
-                reviewLogDao.insertReviewLogs(entities)
+                // Insert in small batches to avoid FK constraint crashing the whole batch
+                val batchSize = 500
+                for (batch in entities.chunked(batchSize)) {
+                    try {
+                        reviewLogDao.insertReviewLogsIgnore(batch)
+                    } catch (e: Exception) {
+                        android.util.Log.w("ReviewLogRepo", "Batch insert failed, trying one-by-one: ${e.message}")
+                        // Fallback: insert one-by-one to skip FK-violating rows
+                        for (entity in batch) {
+                            try {
+                                reviewLogDao.insertReviewLogIgnore(entity)
+                            } catch (_: Exception) { /* skip invalid row */ }
+                        }
+                    }
+                }
+                android.util.Log.d("ReviewLogRepo", "syncReviewLogs: processed ${entities.size} logs")
             }
-        } catch (_: Exception) {
-            // Offline — skip sync
+        } catch (e: Exception) {
+            android.util.Log.e("ReviewLogRepo", "syncReviewLogs FAILED: ${e.message}", e)
         }
     }
 }

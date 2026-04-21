@@ -16,6 +16,12 @@ interface ReviewLogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReviewLogs(reviewLogs: List<ReviewLogEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertReviewLogsIgnore(reviewLogs: List<ReviewLogEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertReviewLogIgnore(reviewLog: ReviewLogEntity)
+
     // Review history for a specific card
     @Query("SELECT * FROM review_logs WHERE flashcardId = :flashcardId ORDER BY reviewedAt DESC")
     suspend fun getReviewLogsByCard(flashcardId: String): List<ReviewLogEntity>
