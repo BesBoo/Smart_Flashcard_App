@@ -124,15 +124,39 @@ class ShareViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val result = shareRepository.joinDeck(code)
-                // Sync decks from server so new deck appears immediately in Room DB
                 val userId = userRepository.getCurrentUserId()
                 if (userId != null) {
-                    deckRepository.syncDecks(userId)
+                    // Immediately insert the joined deck so it appears in UI right away
+                    val joinedDeck = com.example.myapplication.domain.model.Deck(
+                        id = result.deckId,
+                        userId = userId,
+                        name = result.deckName,
+                        description = result.description,
+                        isOwner = false,
+                        permission = result.permission,
+                        ownerName = result.ownerName,
+                        cardCount = result.cardCount,
+                        isShared = true
+                    )
+                    deckRepository.saveDeckLocally(joinedDeck)
+                    android.util.Log.d("ShareVM", "joinDeck: saved deck ${result.deckId} to local DB")
+
+                    // Full sync in background to get cards etc.
+                    try {
+                        deckRepository.syncDecks(userId)
+                        android.util.Log.d("ShareVM", "joinDeck: full sync completed")
+                    } catch (syncEx: Exception) {
+                        android.util.Log.e("ShareVM", "joinDeck: syncDecks failed", syncEx)
+                    }
                 }
                 _uiState.update { it.copy(isLoading = false, joinResult = result, successMessage = "Đã tham gia bộ thẻ \"${result.deckName}\"!") }
+            } catch (e: retrofit2.HttpException) {
+                val msg = if (e.code() == 409) "Bạn đã tham gia bộ thẻ này rồi"
+                          else "HTTP ${e.code()}"
+                _uiState.update { it.copy(isLoading = false, error = msg) }
             } catch (e: Exception) {
                 val msg = when {
-                    e.message?.contains("CONFLICT") == true -> "Bạn đã tham gia bộ thẻ này rồi"
+                    e.message?.contains("409") == true -> "Bạn đã tham gia bộ thẻ này rồi"
                     else -> e.localizedMessage ?: "Không thể tham gia"
                 }
                 _uiState.update { it.copy(isLoading = false, error = msg) }

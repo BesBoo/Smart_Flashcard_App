@@ -12,6 +12,7 @@ interface DeckRepository {
     suspend fun createDeck(deck: Deck)
     suspend fun updateDeck(deck: Deck)
     suspend fun deleteDeck(deckId: String)
+    suspend fun saveDeckLocally(deck: Deck)
     suspend fun syncDecks(userId: String)
     suspend fun syncFlashcardsForDeck(deckId: String, userId: String)
 }

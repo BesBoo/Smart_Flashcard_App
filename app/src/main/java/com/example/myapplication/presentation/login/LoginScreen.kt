@@ -388,7 +388,7 @@ fun LoginScreen(
 
             // ── Skip Login (Offline mode – AUTH-07) ──
             Text(
-                text = "Dùng offline (không đăng nhập)",
+                text = "",
                 fontSize = 13.sp,
                 color = TextGrey,
                 modifier = Modifier.clickable { onSkipLogin() }

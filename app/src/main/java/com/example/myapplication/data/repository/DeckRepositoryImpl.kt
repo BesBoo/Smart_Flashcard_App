@@ -106,6 +106,11 @@ class DeckRepositoryImpl @Inject constructor(
         }
     }
 
+    /** Save a deck to local Room DB only (no server call) — used for joined decks */
+    override suspend fun saveDeckLocally(deck: Deck) {
+        deckDao.insertDeck(deck.toEntity())
+    }
+
     override suspend fun syncDecks(userId: String) {
         try {
             // Step 1: Sync deck metadata from server

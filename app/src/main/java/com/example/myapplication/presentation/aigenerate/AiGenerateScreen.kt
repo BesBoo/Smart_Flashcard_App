@@ -414,7 +414,7 @@ fun AiGenerateScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Dán đoạn văn, ghi chú, hoặc nội dung bài học. Hệ thôngs sẽ tự động tạo flashcard cho bạn.",
+                            text = "Dán đoạn văn, ghi chú, hoặc nội dung bài học. Hệ thống sẽ tự động tạo flashcard cho bạn.",
                             color = cs.onSurfaceVariant,
                             fontSize = 13.sp
                         )
