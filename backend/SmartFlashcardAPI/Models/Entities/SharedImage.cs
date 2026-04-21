@@ -20,9 +20,16 @@ public class SharedImage
     [Required, MaxLength(200)]
     public string Keyword { get; set; } = string.Empty;
 
-    /// <summary>Server-hosted image URL</summary>
+    /// <summary>Server-hosted image URL (or self-hosted blob endpoint)</summary>
     [Required, MaxLength(500)]
     public string ImageUrl { get; set; } = string.Empty;
+
+    /// <summary>Raw image bytes stored in DB (persistent across deploys)</summary>
+    public byte[]? ImageData { get; set; }
+
+    /// <summary>MIME type e.g. "image/jpeg"</summary>
+    [MaxLength(50)]
+    public string? ContentType { get; set; }
 
     /// <summary>Number of times other users used this image</summary>
     public int UsageCount { get; set; } = 0;

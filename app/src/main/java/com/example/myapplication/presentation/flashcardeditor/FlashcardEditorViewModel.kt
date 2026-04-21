@@ -380,8 +380,6 @@ class FlashcardEditorViewModel @Inject constructor(
                 // (isSaved triggers navigation, which would cancel this coroutine)
                 val imageUrl = state.imageUrl
                 if (!imageUrl.isNullOrBlank() && state.frontText.isNotBlank()) {
-                    // Extract base keyword: strip parenthetical suffixes
-                    // e.g. "light (noun)" → "light", "run (verb)" → "run"
                     val rawKeyword = state.frontText.trim()
                     val baseKeyword = rawKeyword.replace(Regex("\\s*\\(.*\\)\\s*$"), "").trim()
 

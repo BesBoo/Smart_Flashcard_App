@@ -6,6 +6,7 @@ namespace SmartFlashcardAPI.Services;
 
 /// <summary>
 /// Community image library — allows users to share and discover images by keyword.
+/// Images are stored as bytea in PostgreSQL so they persist across Render redeployments.
 /// </summary>
 public class SharedImageService
 {
@@ -54,6 +55,45 @@ public class SharedImageService
             ImageUrl = imageUrl
         });
         await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Upload image bytes to DB and create shared image entry.
+    /// Returns the permanent URL for serving the image.
+    /// </summary>
+    public async Task<string> UploadAsync(Guid userId, string keyword, byte[] imageData, string contentType, string baseUrl)
+    {
+        var normalized = keyword.Trim().ToLowerInvariant();
+
+        var entity = new SharedImage
+        {
+            UserId = userId,
+            Keyword = normalized,
+            ImageData = imageData,
+            ContentType = contentType,
+            ImageUrl = "" // placeholder, will update after save
+        };
+        _db.SharedImages.Add(entity);
+        await _db.SaveChangesAsync();
+
+        // Set the permanent blob-serve URL
+        entity.ImageUrl = $"{baseUrl}/api/shared-images/{entity.Id}/file";
+        await _db.SaveChangesAsync();
+
+        return entity.ImageUrl;
+    }
+
+    /// <summary>
+    /// Get raw image bytes for serving.
+    /// </summary>
+    public async Task<(byte[]? Data, string? ContentType)> GetImageDataAsync(Guid imageId)
+    {
+        var image = await _db.SharedImages
+            .Where(s => s.Id == imageId && !s.IsDeleted)
+            .Select(s => new { s.ImageData, s.ContentType })
+            .FirstOrDefaultAsync();
+
+        return (image?.ImageData, image?.ContentType);
     }
 
     /// <summary>

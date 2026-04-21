@@ -49,9 +49,9 @@ public class SharedImagesController : BaseController
         catch (Exception ex) { return HandleError(ex); }
     }
 
-    /// <summary>POST /api/shared-images/upload — upload image file and share it</summary>
+    /// <summary>POST /api/shared-images/upload — upload image file and store in DB</summary>
     [HttpPost("api/shared-images/upload")]
-    [RequestSizeLimit(10 * 1024 * 1024)] // 10MB max
+    [RequestSizeLimit(5 * 1024 * 1024)] // 5MB max
     public async Task<IActionResult> Upload([FromForm] IFormFile file, [FromForm] string keyword)
     {
         try
@@ -67,28 +67,36 @@ public class SharedImagesController : BaseController
             if (!allowedTypes.Contains(file.ContentType.ToLower()))
                 return BadRequest(new { error = "Only image files are allowed" });
 
-            // Save to wwwroot/images/
-            var imagesDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-            Directory.CreateDirectory(imagesDir);
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            if (string.IsNullOrEmpty(ext)) ext = ".jpg";
-            var fileName = $"shared_{Guid.NewGuid():N}{ext}";
-            var filePath = Path.Combine(imagesDir, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Read file bytes into memory
+            byte[] imageData;
+            using (var ms = new MemoryStream())
             {
-                await file.CopyToAsync(stream);
+                await file.CopyToAsync(ms);
+                imageData = ms.ToArray();
             }
 
-            // Build server URL
+            // Store in DB and get the blob-serve URL
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var imageUrl = $"{baseUrl}/images/{fileName}";
-
-            // Save to shared images DB
-            await _sharedImageService.ShareAsync(GetUserId(), keyword, imageUrl);
+            var imageUrl = await _sharedImageService.UploadAsync(
+                GetUserId(), keyword, imageData, file.ContentType, baseUrl);
 
             return Ok(new { imageUrl });
+        }
+        catch (Exception ex) { return HandleError(ex); }
+    }
+
+    /// <summary>GET /api/shared-images/{id}/file — serve image bytes from DB (no auth required)</summary>
+    [AllowAnonymous]
+    [HttpGet("api/shared-images/{id}/file")]
+    [ResponseCache(Duration = 86400)] // Cache 24h — images are immutable
+    public async Task<IActionResult> GetFile(Guid id)
+    {
+        try
+        {
+            var (data, contentType) = await _sharedImageService.GetImageDataAsync(id);
+            if (data == null)
+                return NotFound();
+            return File(data, contentType ?? "image/jpeg");
         }
         catch (Exception ex) { return HandleError(ex); }
     }
