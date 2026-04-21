@@ -203,28 +203,12 @@ class DeckRepositoryImpl @Inject constructor(
                     } while (cardCursor != null)
 
                     if (remoteCards.isNotEmpty()) {
-                        // Preserve local SM2 state: if a card already exists locally
-                        // with study progress, keep the local SM2 fields instead of
-                        // overwriting with server values (which may be stale).
-                        val mergedCards = remoteCards.map { remote ->
-                            val local = flashcardDao.getFlashcardById(remote.id)
-                            if (local != null && local.totalReviews > 0) {
-                                // Keep local SM2 progress, update content from server
-                                remote.copy(
-                                    repetition = local.repetition,
-                                    intervalDays = local.intervalDays,
-                                    easeFactor = local.easeFactor,
-                                    nextReviewDate = local.nextReviewDate,
-                                    failCount = local.failCount,
-                                    totalReviews = local.totalReviews
-                                )
-                            } else {
-                                remote
-                            }
-                        }
+                        // Always use server SM2 values — SM2 state is pushed to server
+                        // after every study session, so server is the source of truth.
+                        // This ensures consistent stats across multiple devices.
                         // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
-                        flashcardDao.insertFlashcardsIgnore(mergedCards)
-                        for (c in mergedCards) {
+                        flashcardDao.insertFlashcardsIgnore(remoteCards)
+                        for (c in remoteCards) {
                             flashcardDao.updateCardFieldsFull(
                                 id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
                                 exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
@@ -274,25 +258,10 @@ class DeckRepositoryImpl @Inject constructor(
             } while (cardCursor != null)
 
             if (remoteCards.isNotEmpty()) {
-                // Preserve local SM2 state for cards with study progress
-                val mergedCards = remoteCards.map { remote ->
-                    val local = flashcardDao.getFlashcardById(remote.id)
-                    if (local != null && local.totalReviews > 0) {
-                        remote.copy(
-                            repetition = local.repetition,
-                            intervalDays = local.intervalDays,
-                            easeFactor = local.easeFactor,
-                            nextReviewDate = local.nextReviewDate,
-                            failCount = local.failCount,
-                            totalReviews = local.totalReviews
-                        )
-                    } else {
-                        remote
-                    }
-                }
+                // Always use server SM2 values for cross-device consistency
                 // Safe upsert: IGNORE new + UPDATE existing to avoid CASCADE delete
-                flashcardDao.insertFlashcardsIgnore(mergedCards)
-                for (c in mergedCards) {
+                flashcardDao.insertFlashcardsIgnore(remoteCards)
+                for (c in remoteCards) {
                     flashcardDao.updateCardFieldsFull(
                         id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
                         exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
