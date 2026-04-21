@@ -348,7 +348,7 @@ private fun AiLogRow(log: AdminAiLogDto) {
                 Text("${log.tokensUsed} tokens", color = cs.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(log.timestamp.take(16).replace("T", " "), color = cs.onSurfaceVariant, fontSize = 11.sp)
+                Text(formatUtcToLocal(log.timestamp), color = cs.onSurfaceVariant, fontSize = 11.sp)
                 if (log.durationMs > 0) {
                     Text("${log.durationMs}ms", color = cs.onSurfaceVariant, fontSize = 11.sp)
                 }
@@ -358,6 +358,19 @@ private fun AiLogRow(log: AdminAiLogDto) {
 }
 
 // ── Helpers ──
+
+private fun formatUtcToLocal(utcTimestamp: String): String {
+    return try {
+        val utcFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+        utcFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        val date = utcFormat.parse(utcTimestamp.take(19)) ?: return utcTimestamp.take(16).replace("T", " ")
+        val localFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
+        localFormat.timeZone = java.util.TimeZone.getDefault()
+        localFormat.format(date)
+    } catch (_: Exception) {
+        utcTimestamp.take(16).replace("T", " ")
+    }
+}
 
 private fun formatPromptType(type: String): String = when (type) {
     "GenerateFlashcards" -> "Tạo Flashcard"
