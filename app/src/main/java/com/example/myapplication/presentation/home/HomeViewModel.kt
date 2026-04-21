@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.sync.SyncScheduler
 import com.example.myapplication.domain.model.LearningStats
+import com.example.myapplication.domain.repository.DeckRepository
+import com.example.myapplication.domain.repository.ReviewLogRepository
 import com.example.myapplication.domain.repository.UserRepository
 import com.example.myapplication.domain.usecase.GetLearningStatsUseCase
 import com.example.myapplication.domain.usecase.SyncDataUseCase
@@ -33,7 +35,9 @@ class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val getLearningStatsUseCase: GetLearningStatsUseCase,
     private val syncDataUseCase: SyncDataUseCase,
-    private val syncScheduler: SyncScheduler
+    private val syncScheduler: SyncScheduler,
+    private val deckRepository: DeckRepository,
+    private val reviewLogRepository: ReviewLogRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -57,6 +61,14 @@ class HomeViewModel @Inject constructor(
                 if (userId != null) {
                     val user = userRepository.getCurrentUser()
                     val userName = user?.displayName ?: "Học viên"
+
+                    // Sync from server to ensure data consistency across devices
+                    try {
+                        deckRepository.syncDecks(userId)
+                        reviewLogRepository.syncReviewLogs(userId)
+                    } catch (_: Exception) {
+                        // Offline — use local data
+                    }
 
                     val stats = try {
                         getLearningStatsUseCase(userId)
@@ -86,17 +98,16 @@ class HomeViewModel @Inject constructor(
             val userId = userRepository.getCurrentUserId() ?: return@launch
             _uiState.update { it.copy(lastSyncResult = SyncResult.IN_PROGRESS) }
 
-            val newTimestamp = syncDataUseCase(userId, "0")
-            _uiState.update {
-                it.copy(
-                    lastSyncResult = if (newTimestamp != null) SyncResult.SUCCESS else SyncResult.FAILED
-                )
+            try {
+                deckRepository.syncDecks(userId)
+                reviewLogRepository.syncReviewLogs(userId)
+                _uiState.update { it.copy(lastSyncResult = SyncResult.SUCCESS) }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(lastSyncResult = SyncResult.FAILED) }
             }
 
             // Refresh data after sync
-            if (newTimestamp != null) {
-                loadHomeData()
-            }
+            loadHomeData()
         }
     }
 
