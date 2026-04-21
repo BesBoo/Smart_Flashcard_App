@@ -409,8 +409,10 @@ IMPORTANT RULES:
     //  GENERATE QUIZ
     // ══════════════════════════════════════════════════════════
 
-    public async Task<List<QuizQuestion>> GenerateQuizAsync(List<QuizCardInput> cards, int questionCount, string language)
+    public async Task<List<QuizQuestion>> GenerateQuizAsync(List<QuizCardInput> cards, int questionCount, string language, Guid? userId = null)
     {
+        _currentPromptType.Value = "Quiz";
+        _currentUserId.Value = userId;
         var cardList = string.Join("\n", cards.Select((c, i) => $"{i + 1}. Front: {c.FrontText} | Back: {c.BackText} | Id: {c.Id}"));
 
         var prompt = $@"Dựa trên danh sách flashcard sau, hãy tạo {questionCount} câu hỏi trắc nghiệm (4 đáp án, 1 đáp án đúng).

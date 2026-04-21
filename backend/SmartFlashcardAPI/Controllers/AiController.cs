@@ -99,7 +99,7 @@ public class AiController : BaseController
             }
 
             var drafts = await _gemini.GenerateFlashcardsFromTextAsync(
-                request.Text, request.Language, request.MaxCards);
+                request.Text, request.Language, request.MaxCards, GetUserId());
             _cache.Set(cacheKey, drafts, TimeSpan.FromHours(6));
             var usage = await IncrementUsageAsync(user, "TextGenPerDay");
             return Ok(new AiGenerateResponse(drafts, usage));
@@ -165,7 +165,7 @@ public class AiController : BaseController
                 return Ok(new AiGenerateResponse(cachedDrafts, cachedUsage));
             }
 
-            var drafts = await _gemini.ExtractVocabularyFromTextAsync(extractedText, targetLanguage, maxWords);
+            var drafts = await _gemini.ExtractVocabularyFromTextAsync(extractedText, targetLanguage, maxWords, GetUserId());
             _cache.Set(cacheKey, drafts, TimeSpan.FromHours(6));
             var usage = await IncrementUsageAsync(user, "FileGenPerDay");
             return Ok(new AiGenerateResponse(drafts, usage));
@@ -212,7 +212,7 @@ public class AiController : BaseController
             if (extractedText.Length > 8000)
                 extractedText = extractedText[..8000];
 
-            var drafts = await _gemini.GenerateFlashcardsFromTextAsync(extractedText, language, maxCards);
+            var drafts = await _gemini.GenerateFlashcardsFromTextAsync(extractedText, language, maxCards, GetUserId());
             var usage = await IncrementUsageAsync(user, "FileGenPerDay");
             return Ok(new AiGenerateResponse(drafts, usage));
         }
@@ -253,7 +253,7 @@ public class AiController : BaseController
             if (extractedText.Length > 8000)
                 extractedText = extractedText[..8000];
 
-            var drafts = await _gemini.GenerateFlashcardsFromTextAsync(extractedText, language, maxCards);
+            var drafts = await _gemini.GenerateFlashcardsFromTextAsync(extractedText, language, maxCards, GetUserId());
             var usage = await IncrementUsageAsync(user, "FileGenPerDay");
             return Ok(new AiGenerateResponse(drafts, usage));
         }
@@ -280,7 +280,7 @@ public class AiController : BaseController
             }
 
             var example = await _gemini.GenerateExampleAsync(
-                request.FrontText, request.BackText, request.Language);
+                request.FrontText, request.BackText, request.Language, GetUserId());
             _cache.Set(cacheKey, example, TimeSpan.FromHours(24));
             var usage = await IncrementUsageAsync(user, "ExamplePerDay");
             return Ok(new AiExampleResponse(example, usage));
@@ -300,7 +300,7 @@ public class AiController : BaseController
                 return QuotaExceeded(GetUsageInfo(user, "FileGenPerDay"));
 
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var imageUrl = await _gemini.GenerateImageUrlAsync(request.FrontText, request.BackText, baseUrl);
+            var imageUrl = await _gemini.GenerateImageUrlAsync(request.FrontText, request.BackText, baseUrl, GetUserId());
             if (imageUrl == null)
                 return Ok(new { imageUrl = (string?)null, message = "Không tìm thấy ảnh phù hợp" });
 
@@ -322,7 +322,7 @@ public class AiController : BaseController
                 return QuotaExceeded(GetUsageInfo(user, "TextGenPerDay"));
 
             var questions = await _gemini.GenerateQuizAsync(
-                request.Cards, request.QuestionCount, request.Language);
+                request.Cards, request.QuestionCount, request.Language, GetUserId());
             var usage = await IncrementUsageAsync(user, "TextGenPerDay");
             return Ok(new AiQuizResponse(questions));
         }
@@ -341,7 +341,7 @@ public class AiController : BaseController
                 return QuotaExceeded(GetUsageInfo(user, "TutorMsgPerDay"));
 
             var response = await _gemini.TutorChatAsync(
-                request.Message, request.Language, request.History);
+                request.Message, request.Language, request.History, GetUserId());
             var usage = await IncrementUsageAsync(user, "TutorMsgPerDay");
             return Ok(new { response, usage });
         }
@@ -359,7 +359,7 @@ public class AiController : BaseController
             if (user.AiUsageToday >= limit)
                 return QuotaExceeded(GetUsageInfo(user, "ExamplePerDay"));
 
-            var hint = await _gemini.GetAdaptiveHintAsync(request.Flashcard, request.Language);
+            var hint = await _gemini.GetAdaptiveHintAsync(request.Flashcard, request.Language, GetUserId());
             var usage = await IncrementUsageAsync(user, "ExamplePerDay");
             return Ok(new AiAdaptiveResponse(hint, usage));
         }
