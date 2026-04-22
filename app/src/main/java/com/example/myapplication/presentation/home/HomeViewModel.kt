@@ -48,12 +48,12 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     init {
-        loadHomeData()
+        loadHomeData(syncFirst = true)
         // Schedule periodic background sync on app start
         syncScheduler.schedulePeriodicSync()
     }
 
-    private fun loadHomeData() {
+    private fun loadHomeData(syncFirst: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
@@ -62,12 +62,16 @@ class HomeViewModel @Inject constructor(
                     val user = userRepository.getCurrentUser()
                     val userName = user?.displayName ?: "Học viên"
 
-                    // Sync from server to ensure data consistency across devices
-                    try {
-                        deckRepository.syncDecks(userId)
-                        reviewLogRepository.syncReviewLogs(userId)
-                    } catch (_: Exception) {
-                        // Offline — use local data
+                    // Only sync from server on first load or manual sync
+                    // On tab switch / return from study, use local Room data
+                    // (which already has the latest SM2 from the study session)
+                    if (syncFirst) {
+                        try {
+                            deckRepository.syncDecks(userId)
+                            reviewLogRepository.syncReviewLogs(userId)
+                        } catch (_: Exception) {
+                            // Offline — use local data
+                        }
                     }
 
                     val stats = try {
@@ -106,12 +110,13 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(lastSyncResult = SyncResult.FAILED) }
             }
 
-            // Refresh data after sync
-            loadHomeData()
+            // Refresh data after sync (no need to sync again)
+            loadHomeData(syncFirst = false)
         }
     }
 
+    /** Refresh stats from local Room (no server sync — fast) */
     fun refresh() {
-        loadHomeData()
+        loadHomeData(syncFirst = false)
     }
 }
