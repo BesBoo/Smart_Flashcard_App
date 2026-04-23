@@ -25,7 +25,8 @@ data class UtilitiesUiState(
 @HiltViewModel
 class UtilitiesHubViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val getLearningStatsUseCase: GetLearningStatsUseCase
+    private val getLearningStatsUseCase: GetLearningStatsUseCase,
+    private val chatBubbleState: ChatBubbleState
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UtilitiesUiState())
@@ -33,6 +34,12 @@ class UtilitiesHubViewModel @Inject constructor(
 
     init {
         loadStats()
+        // Sync bubble state from singleton
+        viewModelScope.launch {
+            chatBubbleState.isEnabled.collect { enabled ->
+                _uiState.update { it.copy(isBubbleEnabled = enabled) }
+            }
+        }
     }
 
     fun refresh() {
@@ -67,7 +74,6 @@ class UtilitiesHubViewModel @Inject constructor(
     }
 
     fun toggleBubble(enabled: Boolean) {
-        _uiState.update { it.copy(isBubbleEnabled = enabled) }
-        // Phase 4: Will start/stop FloatingBubbleService here
+        chatBubbleState.setEnabled(enabled)
     }
 }

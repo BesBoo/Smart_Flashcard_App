@@ -2,6 +2,7 @@ package com.example.myapplication.presentation.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
@@ -152,12 +153,19 @@ fun RootNavGraph() {
         }
 
         composable(route = "main_flow") {
+            val chatBubbleState = remember {
+                dagger.hilt.android.EntryPointAccessors.fromApplication(
+                    navController.context.applicationContext,
+                    ChatBubbleStateEntryPoint::class.java
+                ).chatBubbleState()
+            }
             MainScreen(
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                chatBubbleState = chatBubbleState
             )
         }
 
