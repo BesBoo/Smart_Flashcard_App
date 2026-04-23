@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.myapplication.presentation.aigenerate.AiGenerateScreen
-import com.example.myapplication.presentation.aitutor.AiTutorScreen
+import com.example.myapplication.presentation.utilities.ChatScreen
 import com.example.myapplication.presentation.utilities.UtilitiesHubScreen
 import com.example.myapplication.presentation.deckdetail.DeckDetailScreen
 import com.example.myapplication.presentation.decks.DecksScreen
@@ -71,7 +71,9 @@ fun MainNavGraph(
 
         // ── Utilities Sub-screens ──
         composable(route = Screen.AiChat.route) {
-            AiTutorScreen()  // Reuses existing AI Tutor screen (enhanced in Phase 2)
+            ChatScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
         composable(route = Screen.SmartReview.route) {
             // Phase 3: SmartReviewScreen will replace this placeholder

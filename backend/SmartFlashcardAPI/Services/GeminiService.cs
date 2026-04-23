@@ -446,7 +446,23 @@ Nhiệm vụ:
 - Cho ví dụ câu, cách sử dụng
 - Gợi ý cách ghi nhớ (mnemonics)
 - Giải đáp thắc mắc liên quan đến học tập
-Trả lời ngắn gọn, dễ hiểu, thân thiện. Sử dụng emoji phù hợp.";
+Trả lời ngắn gọn, dễ hiểu, thân thiện. Sử dụng emoji phù hợp.
+
+VOCABULARY DETECTION (QUAN TRỌNG):
+Sau khi trả lời tự nhiên, hãy phân tích cuộc trò chuyện để tìm từ vựng đáng học.
+Nếu phát hiện từ vựng đáng chú ý (từ không phổ biến, học thuật, hoặc hữu ích cho việc học ngôn ngữ),
+hãy thêm khối JSON ở CUỐI phản hồi, phân tách bằng dấu hiệu ---VOCAB---:
+
+---VOCAB---
+[
+  {{""word"": ""complex"", ""pronunciation"": ""/kəmˈpleks/"", ""partOfSpeech"": ""adj"", ""definitionEn"": ""consisting of many parts; difficult to understand"", ""definitionVi"": ""phức tạp"", ""example"": ""This is a complex problem that requires careful analysis.""}}
+]
+
+Quy tắc:
+- Chỉ phát hiện từ hữu ích cho việc học (bỏ qua từ cơ bản)
+- Tối đa 3 từ mỗi tin nhắn
+- Nếu không có từ vựng đáng chú ý, KHÔNG thêm khối ---VOCAB---
+- Phản hồi chính phải tự nhiên và hữu ích, phát hiện từ vựng là phụ";
 
         // Build conversation contents for Gemini
         var contents = new List<object>();
