@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+}
+
+// Read local.properties
+val localPropsFile = rootProject.file("local.properties")
+val localProperties = Properties()
+if (localPropsFile.exists()) {
+    localPropsFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -19,14 +28,21 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inject WEB_CLIENT_ID from local.properties into BuildConfig
+        buildConfigField(
+            "String",
+            "WEB_CLIENT_ID",
+            "\"${localProperties.getProperty("WEB_CLIENT_ID", "")}\""
+        )
     }
 
     signingConfigs {
         create("release") {
             storeFile = file("release.keystore")
-            storePassword = "MemoHop2026!"
-            keyAlias = "memohop"
-            keyPassword = "MemoHop2026!"
+            storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD", "")
+            keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS", "")
+            keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD", "")
         }
     }
 
@@ -50,6 +66,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

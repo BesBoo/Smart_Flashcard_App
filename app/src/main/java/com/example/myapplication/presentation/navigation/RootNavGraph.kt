@@ -22,9 +22,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.example.myapplication.BuildConfig
 import kotlinx.coroutines.launch
-
-private const val WEB_CLIENT_ID = "541677107799-t49kq7g15csl9h5jgid7ust1jf5rvr9i.apps.googleusercontent.com"
 
 @Composable
 fun RootNavGraph() {
@@ -79,7 +78,7 @@ fun RootNavGraph() {
                             val credentialManager = CredentialManager.create(context)
                             val googleIdOption = GetGoogleIdOption.Builder()
                                 .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId(WEB_CLIENT_ID)
+                                .setServerClientId(BuildConfig.WEB_CLIENT_ID)
                                 .build()
 
                             val request = GetCredentialRequest.Builder()
