@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.myapplication.presentation.aigenerate.AiGenerateScreen
 import com.example.myapplication.presentation.utilities.ChatScreen
+import com.example.myapplication.presentation.utilities.SmartReviewScreen
 import com.example.myapplication.presentation.utilities.UtilitiesHubScreen
 import com.example.myapplication.presentation.deckdetail.DeckDetailScreen
 import com.example.myapplication.presentation.decks.DecksScreen
@@ -76,11 +77,8 @@ fun MainNavGraph(
             )
         }
         composable(route = Screen.SmartReview.route) {
-            // Phase 3: SmartReviewScreen will replace this placeholder
-            androidx.compose.material3.Text(
-                text = "Smart Review — Coming Soon",
-                modifier = Modifier.padding(32.dp),
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+            SmartReviewScreen(
+                onNavigateBack = { navController.navigateUp() }
             )
         }
 

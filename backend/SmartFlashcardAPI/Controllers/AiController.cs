@@ -365,4 +365,23 @@ public class AiController : BaseController
         }
         catch (Exception ex) { return HandleError(ex); }
     }
+
+    /// <summary>POST /api/ai/smart-review — Generate variant-based cloze questions for cross-deck review</summary>
+    [HttpPost("smart-review")]
+    public async Task<IActionResult> SmartReview([FromBody] SmartReviewRequest request)
+    {
+        try
+        {
+            var user = await GetCurrentUserAsync();
+            var limit = GetDailyLimit(user, "TextGenPerDay");
+            if (user.AiUsageToday >= limit)
+                return QuotaExceeded(GetUsageInfo(user, "TextGenPerDay"));
+
+            var questions = await _gemini.GenerateSmartReviewAsync(
+                request.Words, request.QuestionCount, request.Language, GetUserId());
+            var usage = await IncrementUsageAsync(user, "TextGenPerDay");
+            return Ok(new SmartReviewResponse(questions, usage));
+        }
+        catch (Exception ex) { return HandleError(ex); }
+    }
 }

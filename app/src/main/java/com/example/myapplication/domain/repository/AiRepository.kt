@@ -38,7 +38,18 @@ interface AiRepository {
 
     /** Polysemy: Analyze a word for all meanings, variants, and homonyms */
     suspend fun analyzeWord(word: String, definition: String, context: String? = null): WordAnalysisResult
+
+    /** Smart Review: Generate variant-based cloze questions from vocabulary */
+    suspend fun generateSmartReview(words: List<SmartReviewInput>, questionCount: Int = 10, language: String = "en"): List<com.example.myapplication.domain.model.VariantQuestion>
 }
+
+/** Input for Smart Review question generation */
+data class SmartReviewInput(
+    val word: String,
+    val partOfSpeech: String = "",
+    val definition: String = "",
+    val sourceCardId: String? = null
+)
 
 /** Domain-level quiz question (no DTO dependency) */
 data class QuizQuestion(

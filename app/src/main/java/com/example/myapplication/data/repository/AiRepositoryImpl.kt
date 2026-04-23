@@ -197,6 +197,33 @@ class AiRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun generateSmartReview(
+        words: List<com.example.myapplication.domain.repository.SmartReviewInput>,
+        questionCount: Int,
+        language: String
+    ): List<com.example.myapplication.domain.model.VariantQuestion> {
+        val dtoWords = words.map {
+            com.example.myapplication.data.remote.dto.SmartReviewWordDto(
+                word = it.word,
+                partOfSpeech = it.partOfSpeech,
+                definition = it.definition,
+                sourceCardId = it.sourceCardId
+            )
+        }
+        val response = aiApi.smartReview(
+            com.example.myapplication.data.remote.dto.SmartReviewRequest(dtoWords, questionCount, language)
+        )
+        return response.questions.map { q ->
+            com.example.myapplication.domain.model.VariantQuestion(
+                sentence = q.sentence,
+                baseWord = q.baseWord,
+                options = q.options,
+                correctIndex = q.correctIndex,
+                sourceCardId = q.sourceCardId
+            )
+        }
+    }
+
     private fun com.example.myapplication.data.remote.dto.SenseDto.toDomain(
         isSelected: Boolean = true
     ) = com.example.myapplication.domain.repository.WordSenseItem(

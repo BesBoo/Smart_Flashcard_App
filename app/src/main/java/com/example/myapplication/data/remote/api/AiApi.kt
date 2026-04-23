@@ -73,4 +73,8 @@ interface AiApi {
     // ── Word Polysemy Analysis ──
     @POST("api/words/analyze")
     suspend fun analyzeWord(@Body request: WordAnalyzeRequest): WordAnalysisResponse
+
+    // ── Smart Review (Variant Quiz) ──
+    @POST("api/ai/smart-review")
+    suspend fun smartReview(@Body request: com.example.myapplication.data.remote.dto.SmartReviewRequest): com.example.myapplication.data.remote.dto.SmartReviewResponse
 }

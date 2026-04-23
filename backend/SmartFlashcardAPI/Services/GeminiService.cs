@@ -526,6 +526,78 @@ Quy tắc:
     }
 
     // ══════════════════════════════════════════════════════════
+    //  SMART REVIEW — VARIANT QUIZ
+    // ══════════════════════════════════════════════════════════
+
+    public async Task<List<SmartReviewQuestion>> GenerateSmartReviewAsync(
+        List<SmartReviewWord> words, int questionCount, string language, Guid? userId = null)
+    {
+        _currentPromptType.Value = "SmartReview";
+        _currentUserId.Value = userId;
+
+        var wordListText = string.Join("\n", words.Select((w, i) =>
+            $"{i + 1}. \"{w.Word}\" ({w.PartOfSpeech}) — {w.Definition}"));
+
+        var prompt = $@"You are creating a vocabulary quiz with morphological variant questions.
+
+For each word below, generate a fill-in-the-blank question.
+
+Words:
+{wordListText}
+
+For EACH word (generate exactly {questionCount} questions, picking from the list):
+1. Create a natural English sentence with a blank (______) where the word should go
+2. Generate 3 WRONG options that are morphological variants of the SAME root word
+3. The correct answer must grammatically fit the sentence perfectly
+4. Wrong options should be plausible but grammatically incorrect in that context
+
+Return JSON array (NO markdown, NO explanation):
+[
+  {{
+    ""baseWord"": ""analyze"",
+    ""sentence"": ""We need to ______ the data before making a decision."",
+    ""options"": [""analyze"", ""analysis"", ""analytical"", ""analyzed""],
+    ""correctIndex"": 0
+  }}
+]
+
+Rules:
+- All 4 options must be forms/variants of the SAME root word
+- Sentences should be natural, not overly simple
+- Mix up the position of the correct answer (don't always put it first)
+- Return ONLY the JSON array, nothing else";
+
+        var result = await CallGeminiAsync(prompt);
+
+        // Parse JSON
+        var cleanJson = CleanJsonResponse(result);
+        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var questions = System.Text.Json.JsonSerializer.Deserialize<List<SmartReviewQuestionRaw>>(
+            cleanJson, options) ?? new List<SmartReviewQuestionRaw>();
+
+        return questions.Select((q, i) =>
+        {
+            var matchingWord = words.FirstOrDefault(w =>
+                w.Word.Equals(q.BaseWord, StringComparison.OrdinalIgnoreCase));
+
+            return new SmartReviewQuestion(
+                BaseWord: q.BaseWord ?? "",
+                Sentence: q.Sentence ?? "",
+                Options: q.Options ?? new List<string>(),
+                CorrectIndex: q.CorrectIndex,
+                SourceCardId: matchingWord?.SourceCardId
+            );
+        }).Where(q => q.Options.Count >= 2 && !string.IsNullOrEmpty(q.Sentence)).ToList();
+    }
+
+    private record SmartReviewQuestionRaw(
+        string? BaseWord,
+        string? Sentence,
+        List<string>? Options,
+        int CorrectIndex
+    );
+
+    // ══════════════════════════════════════════════════════════
     //  ADAPTIVE HINT
     // ══════════════════════════════════════════════════════════
 

@@ -228,6 +228,12 @@ public record AiAdaptiveResponse(AdaptiveHint Hint, AiUsageInfo Usage);
 
 public record AiUsageInfo(int Used, int Limit);
 
+// ── Smart Review (Variant Quiz) DTOs ────────────────────────
+public record SmartReviewRequest(List<SmartReviewWord> Words, int QuestionCount = 10, string Language = "en");
+public record SmartReviewWord(string Word, string PartOfSpeech = "", string Definition = "", Guid? SourceCardId = null);
+public record SmartReviewQuestion(string BaseWord, string Sentence, List<string> Options, int CorrectIndex, Guid? SourceCardId);
+public record SmartReviewResponse(List<SmartReviewQuestion> Questions, AiUsageInfo Usage);
+
 // ============================================================
 // SHARE DTOs
 // ============================================================

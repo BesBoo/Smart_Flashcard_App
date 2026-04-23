@@ -456,6 +456,38 @@ data class AiTutorResponse(
     val usage: AiUsageInfo
 )
 
+// ── Smart Review DTOs ──
+
+@Serializable
+data class SmartReviewWordDto(
+    val word: String,
+    val partOfSpeech: String = "",
+    val definition: String = "",
+    val sourceCardId: String? = null
+)
+
+@Serializable
+data class SmartReviewRequest(
+    val words: List<SmartReviewWordDto>,
+    val questionCount: Int = 10,
+    val language: String = "en"
+)
+
+@Serializable
+data class SmartReviewQuestionDto(
+    val baseWord: String,
+    val sentence: String,
+    val options: List<String>,
+    val correctIndex: Int,
+    val sourceCardId: String? = null
+)
+
+@Serializable
+data class SmartReviewResponse(
+    val questions: List<SmartReviewQuestionDto>,
+    val usage: AiUsageInfo
+)
+
 @Serializable
 data class FlashcardInfo(
     val frontText: String,
