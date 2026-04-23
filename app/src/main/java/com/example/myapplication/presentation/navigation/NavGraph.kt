@@ -1,7 +1,9 @@
 package com.example.myapplication.presentation.navigation
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.myapplication.presentation.aigenerate.AiGenerateScreen
 import com.example.myapplication.presentation.aitutor.AiTutorScreen
+import com.example.myapplication.presentation.utilities.UtilitiesHubScreen
 import com.example.myapplication.presentation.deckdetail.DeckDetailScreen
 import com.example.myapplication.presentation.decks.DecksScreen
 import com.example.myapplication.presentation.flashcardeditor.FlashcardEditorScreen
@@ -49,14 +52,34 @@ fun MainNavGraph(
                 }
             )
         }
-        composable(route = Screen.AiTutor.route) {
-            AiTutorScreen()
+        composable(route = Screen.Utilities.route) {
+            UtilitiesHubScreen(
+                onOpenAiChat = {
+                    navController.navigate(Screen.AiChat.route)
+                },
+                onOpenSmartReview = {
+                    navController.navigate(Screen.SmartReview.route)
+                }
+            )
         }
         composable(route = Screen.Stats.route) {
             StatsScreen()
         }
         composable(route = Screen.Settings.route) {
             SettingsScreen(onLogout = onLogout)
+        }
+
+        // ── Utilities Sub-screens ──
+        composable(route = Screen.AiChat.route) {
+            AiTutorScreen()  // Reuses existing AI Tutor screen (enhanced in Phase 2)
+        }
+        composable(route = Screen.SmartReview.route) {
+            // Phase 3: SmartReviewScreen will replace this placeholder
+            androidx.compose.material3.Text(
+                text = "Smart Review — Coming Soon",
+                modifier = Modifier.padding(32.dp),
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+            )
         }
 
         // ── Sub-screens ──

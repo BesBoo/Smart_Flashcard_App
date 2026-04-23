@@ -3,6 +3,7 @@ package com.example.myapplication.presentation.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Settings
@@ -22,9 +23,13 @@ sealed class Screen(val route: String, val title: String? = null, val icon: Imag
     // Main Bottom Navigation Tabs
     object Home : Screen("home", "Trang chủ", Icons.Default.Home)
     object Decks : Screen("decks", "Thư viện", Icons.Default.LibraryBooks)
-    object AiTutor : Screen("ai_tutor", "AI Tutor", Icons.Default.AutoAwesome)
+    object Utilities : Screen("utilities", "Tiện ích", Icons.Default.Widgets)
     object Stats : Screen("stats", "Thống kê", Icons.Default.BarChart)
     object Settings : Screen("settings", "Cài đặt", Icons.Default.Settings)
+
+    // Sub-screens under Utilities
+    object AiChat : Screen("ai_chat")
+    object SmartReview : Screen("smart_review")
 
     /** Admin drawer navigation items */
     object AdminDashboard : Screen("admin_dashboard", "Dashboard", Icons.Default.Dashboard)
@@ -61,7 +66,7 @@ sealed class Screen(val route: String, val title: String? = null, val icon: Imag
     }
     
     companion object {
-        val bottomNavItems = listOf(Home, Decks, AiTutor, Stats, Settings)
+        val bottomNavItems = listOf(Home, Decks, Utilities, Stats, Settings)
         val adminDrawerItems = listOf(AdminDashboard, AdminUsers, AdminAiLogs, AdminReports, AdminSettings)
     }
 }
