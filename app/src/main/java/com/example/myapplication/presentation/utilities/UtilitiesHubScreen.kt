@@ -124,8 +124,8 @@ fun UtilitiesHubScreen(
 
         ToolCard(
             icon = Icons.Default.Public,
-            title = "Universal Review",
-            subtitle = "Ôn toàn bộ thẻ từ mọi deck",
+            title = "Smart Review",
+            subtitle = "Ôn tập biến thể từ mọi deck",
             gradientColors = listOf(
                 Color(0xFF059669),
                 Color(0xFF10B981)
@@ -137,13 +137,14 @@ fun UtilitiesHubScreen(
 
         ToolCard(
             icon = Icons.Default.Psychology,
-            title = "Variant Practice",
-            subtitle = "Luyện biến thể từ",
+            title = "Flashcard Quiz",
+            subtitle = "Trắc nghiệm từ vựng",
             gradientColors = listOf(
                 Color(0xFFEA580C),
                 Color(0xFFF97316)
             ),
-            onClick = onOpenSmartReview // Same screen, different mode later
+            enabled = false,
+            onClick = { }
         )
 
         Spacer(Modifier.height(12.dp))

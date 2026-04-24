@@ -67,6 +67,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -86,9 +89,10 @@ fun ChatScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Auto-scroll to bottom on new message
-    LaunchedEffect(uiState.messages.size) {
+    LaunchedEffect(uiState.messages.size, uiState.isLoading) {
         if (uiState.messages.isNotEmpty()) {
-            listState.animateScrollToItem(uiState.messages.size - 1)
+            val targetIndex = if (uiState.isLoading) uiState.messages.size else uiState.messages.size - 1
+            listState.animateScrollToItem(targetIndex.coerceAtMost(uiState.messages.size))
         }
     }
 
@@ -516,6 +520,8 @@ private fun ChatInputBar(
             singleLine = false,
             maxLines = 3,
             enabled = !isLoading,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(onSend = { onSend() }),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = cs.onSurface,
                 unfocusedTextColor = cs.onSurface,

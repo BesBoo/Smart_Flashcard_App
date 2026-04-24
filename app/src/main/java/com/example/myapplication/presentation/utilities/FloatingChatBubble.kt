@@ -3,7 +3,13 @@ package com.example.myapplication.presentation.utilities
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -78,11 +84,50 @@ fun FloatingChatBubble(
         label = "elevation"
     )
 
+    // Smooth edge-snap animation
+    var targetX by remember { mutableFloatStateOf(screenWidthPx - bubbleSizePx - with(density) { 16.dp.toPx() }) }
+    val animatedOffsetX by animateFloatAsState(
+        targetValue = targetX,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow),
+        label = "snapX"
+    )
+
+    // Pulse ring animation for discoverability
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseAlpha"
+    )
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseScale"
+    )
+
     Box(modifier = modifier.fillMaxSize()) {
+        // Pulse ring
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(animatedOffsetX.roundToInt(), offsetY.roundToInt()) }
+                .size((56 * pulseScale).dp)
+                .offset(x = (-((56 * pulseScale - 56) / 2)).dp, y = (-((56 * pulseScale - 56) / 2)).dp)
+                .clip(CircleShape)
+                .background(Color(0xFF6366F1).copy(alpha = pulseAlpha * 0.3f))
+        )
+
         // Bubble
         Box(
             modifier = Modifier
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .offset { IntOffset(animatedOffsetX.roundToInt(), offsetY.roundToInt()) }
                 .size(56.dp)
                 .shadow(animatedElevation, CircleShape)
                 .clip(CircleShape)
@@ -96,12 +141,12 @@ fun FloatingChatBubble(
                         onDragStart = { isDragging = true },
                         onDragEnd = {
                             isDragging = false
-                            // Snap to nearest edge
+                            // Snap to nearest edge (animated via animateFloatAsState)
                             val midX = screenWidthPx / 2
-                            offsetX = if (offsetX + bubbleSizePx / 2 < midX) {
-                                with(density) { 8.dp.toPx() }  // Snap left
+                            targetX = if (offsetX + bubbleSizePx / 2 < midX) {
+                                with(density) { 8.dp.toPx() }
                             } else {
-                                screenWidthPx - bubbleSizePx - with(density) { 8.dp.toPx() }  // Snap right
+                                screenWidthPx - bubbleSizePx - with(density) { 8.dp.toPx() }
                             }
                             // Clamp Y
                             offsetY = offsetY.coerceIn(0f, screenHeightPx - bubbleSizePx)
@@ -109,6 +154,7 @@ fun FloatingChatBubble(
                         onDrag = { change, dragAmount ->
                             change.consume()
                             offsetX = (offsetX + dragAmount.x).coerceIn(0f, screenWidthPx - bubbleSizePx)
+                            targetX = offsetX // Follow finger during drag
                             offsetY = (offsetY + dragAmount.y).coerceIn(0f, screenHeightPx - bubbleSizePx)
                         }
                     )
@@ -134,7 +180,7 @@ fun FloatingChatBubble(
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut(),
             modifier = Modifier
-                .offset { IntOffset(offsetX.roundToInt() - with(density) { 20.dp.toPx() }.roundToInt(), offsetY.roundToInt() - with(density) { 36.dp.toPx() }.roundToInt()) }
+                .offset { IntOffset(animatedOffsetX.roundToInt() - with(density) { 20.dp.toPx() }.roundToInt(), offsetY.roundToInt() - with(density) { 36.dp.toPx() }.roundToInt()) }
         ) {
             Box(
                 modifier = Modifier

@@ -1,6 +1,15 @@
 package com.example.myapplication.presentation.utilities
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -292,6 +301,18 @@ private fun QuizContent(
 
             Spacer(Modifier.height(24.dp))
 
+            // Animated question transitions
+            AnimatedContent(
+                targetState = uiState.currentIndex,
+                transitionSpec = {
+                    (slideInHorizontally { it } + fadeIn()).togetherWith(
+                        slideOutHorizontally { -it } + fadeOut()
+                    )
+                },
+                label = "question"
+            ) { _ ->
+                val q = uiState.currentQuestion ?: return@AnimatedContent
+                Column {
             // Cloze sentence
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -306,7 +327,7 @@ private fun QuizContent(
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
-                        text = question.sentence,
+                        text = q.sentence,
                         color = cs.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -318,9 +339,9 @@ private fun QuizContent(
             Spacer(Modifier.height(20.dp))
 
             // Options
-            question.options.forEachIndexed { index, option ->
+            q.options.forEachIndexed { index, option ->
                 val isSelected = uiState.selectedAnswer == index
-                val isCorrect = index == question.correctIndex
+                val isCorrect = index == q.correctIndex
                 val isRevealed = uiState.isRevealed
 
                 val borderColor by animateColorAsState(
@@ -382,6 +403,8 @@ private fun QuizContent(
                     }
                 }
             }
+                } // end Column inside AnimatedContent
+            } // end AnimatedContent
         }
 
         // Next button
@@ -441,9 +464,23 @@ private fun ResultContent(
         Spacer(Modifier.height(12.dp))
         Text(
             text = "$correct/$total câu đúng ($percentage%)",
-            color = cs.onSurface,
+            color = cs.onSurfaceVariant,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
+        )
+
+        // Score bar
+        Spacer(Modifier.height(20.dp))
+        val animatedProgress by animateFloatAsState(
+            targetValue = if (total > 0) correct.toFloat() / total else 0f,
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            label = "scoreProgress"
+        )
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+            color = if (percentage >= 70) AccentGreen else Color(0xFFF59E0B),
+            trackColor = cs.surfaceContainer,
         )
 
         Spacer(Modifier.height(32.dp))
