@@ -52,6 +52,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
+import com.example.myapplication.R
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 /**
  * In-app floating chat bubble.
@@ -71,7 +74,7 @@ fun FloatingChatBubble(
 
     val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
     val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
-    val bubbleSizePx = with(density) { 56.dp.toPx() }
+    val bubbleSizePx = with(density) { 64.dp.toPx() }
 
     // Bubble position state
     var offsetX by remember { mutableFloatStateOf(screenWidthPx - bubbleSizePx - with(density) { 16.dp.toPx() }) }
@@ -118,8 +121,8 @@ fun FloatingChatBubble(
         Box(
             modifier = Modifier
                 .offset { IntOffset(animatedOffsetX.roundToInt(), offsetY.roundToInt()) }
-                .size((56 * pulseScale).dp)
-                .offset(x = (-((56 * pulseScale - 56) / 2)).dp, y = (-((56 * pulseScale - 56) / 2)).dp)
+                .size((64 * pulseScale).dp)
+                .offset(x = (-((64 * pulseScale - 64) / 2)).dp, y = (-((64 * pulseScale - 64) / 2)).dp)
                 .clip(CircleShape)
                 .background(Color(0xFF6366F1).copy(alpha = pulseAlpha * 0.3f))
         )
@@ -128,14 +131,10 @@ fun FloatingChatBubble(
         Box(
             modifier = Modifier
                 .offset { IntOffset(animatedOffsetX.roundToInt(), offsetY.roundToInt()) }
-                .size(56.dp)
+                .size(64.dp)
                 .shadow(animatedElevation, CircleShape)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-                    )
-                )
+                .background(Color.White)
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { isDragging = true },
@@ -166,11 +165,11 @@ fun FloatingChatBubble(
                 },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                Icons.Default.AutoAwesome,
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.ic_ai_chat),
                 contentDescription = "Mở AI Chat",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(56.dp),
+                contentScale = ContentScale.Crop
             )
         }
 

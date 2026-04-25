@@ -46,17 +46,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.R
 
 @Composable
 fun UtilitiesHubScreen(
     modifier: Modifier = Modifier,
     viewModel: UtilitiesHubViewModel = hiltViewModel(),
     onOpenAiChat: () -> Unit = {},
-    onOpenSmartReview: () -> Unit = {}
+    onOpenSmartReview: () -> Unit = {},
+    onOpenFlashcardQuiz: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val cs = MaterialTheme.colorScheme
@@ -110,53 +114,36 @@ fun UtilitiesHubScreen(
 
         // ── Tool Cards ──
         ToolCard(
-            icon = Icons.Default.AutoAwesome,
+            iconResId = R.drawable.ic_ai_chat,
             title = "AI Chat",
             subtitle = "Học từ mới qua trò chuyện",
-            gradientColors = listOf(
-                Color(0xFF6366F1),
-                Color(0xFF8B5CF6)
-            ),
             onClick = onOpenAiChat
         )
 
         Spacer(Modifier.height(12.dp))
 
         ToolCard(
-            icon = Icons.Default.Public,
+            iconResId = R.drawable.ic_smart_review,
             title = "Smart Review",
             subtitle = "Ôn tập biến thể từ mọi deck",
-            gradientColors = listOf(
-                Color(0xFF059669),
-                Color(0xFF10B981)
-            ),
             onClick = onOpenSmartReview
         )
 
         Spacer(Modifier.height(12.dp))
 
         ToolCard(
-            icon = Icons.Default.Psychology,
+            iconResId = R.drawable.ic_flashcard_quiz,
             title = "Flashcard Quiz",
             subtitle = "Trắc nghiệm từ vựng",
-            gradientColors = listOf(
-                Color(0xFFEA580C),
-                Color(0xFFF97316)
-            ),
-            enabled = false,
-            onClick = { }
+            onClick = onOpenFlashcardQuiz
         )
 
         Spacer(Modifier.height(12.dp))
 
         ToolCard(
-            icon = Icons.Default.Extension,
+            iconResId = R.drawable.ic_more_tools,
             title = "Công cụ khác",
             subtitle = "Coming soon",
-            gradientColors = listOf(
-                Color(0xFF64748B),
-                Color(0xFF94A3B8)
-            ),
             enabled = false,
             onClick = { }
         )
@@ -285,10 +272,9 @@ private fun StatItem(
 
 @Composable
 private fun ToolCard(
-    icon: ImageVector,
+    iconResId: Int,
     title: String,
     subtitle: String,
-    gradientColors: List<Color>,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
@@ -312,25 +298,16 @@ private fun ToolCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon with gradient background
-            Box(
+            // Icon image
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = iconResId),
+                contentDescription = title,
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = gradientColors.map { it.copy(alpha = alpha) }
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = title,
-                    tint = Color.White.copy(alpha = alpha),
-                    modifier = Modifier.size(26.dp)
-                )
-            }
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop,
+                alpha = alpha
+            )
 
             Spacer(Modifier.width(14.dp))
 

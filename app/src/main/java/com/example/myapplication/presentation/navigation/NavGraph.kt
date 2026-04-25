@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.myapplication.presentation.aigenerate.AiGenerateScreen
 import com.example.myapplication.presentation.utilities.ChatScreen
+import com.example.myapplication.presentation.utilities.FlashcardQuizScreen
 import com.example.myapplication.presentation.utilities.SmartReviewScreen
 import com.example.myapplication.presentation.utilities.UtilitiesHubScreen
 import com.example.myapplication.presentation.deckdetail.DeckDetailScreen
@@ -60,6 +61,9 @@ fun MainNavGraph(
                 },
                 onOpenSmartReview = {
                     navController.navigate(Screen.SmartReview.route)
+                },
+                onOpenFlashcardQuiz = {
+                    navController.navigate(Screen.FlashcardQuiz.route)
                 }
             )
         }
@@ -78,6 +82,11 @@ fun MainNavGraph(
         }
         composable(route = Screen.SmartReview.route) {
             SmartReviewScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(route = Screen.FlashcardQuiz.route) {
+            FlashcardQuizScreen(
                 onNavigateBack = { navController.navigateUp() }
             )
         }

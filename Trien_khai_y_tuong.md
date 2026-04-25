@@ -197,3 +197,30 @@ for coastal communities around the world.
 - `AiRepository.kt` / `AiRepositoryImpl.kt` — Thêm method `extractVocabFromPdf/Docx()`
 - `AiGenerateViewModel.kt` — Thêm mode "Trích xuất từ vựng"
 - `AiGenerateScreen.kt` — Thêm UI chọn chế độ + review từ vựng
+
+---
+
+# 4. Tính năng cộng tác: Share deck giữa các user
+
+## 4.1 Mô tả tính năng
+Cho phép người dùng chia sẻ một deck cho user khác thông qua email hoặc mã chia sẻ.
+User nhận được có thể tham gia deck để học ngay mà không cần tự tạo lại nội dung.
+
+## 4.2 Vai trò và quyền truy cập
+- Chủ deck (Owner): toàn quyền chỉnh sửa deck, thêm/sửa/xóa flashcard, thu hồi quyền chia sẻ.
+- Người được chia sẻ (Viewer): được học và xem nội dung deck.
+- Tùy chọn nâng cao (Editor): được thêm/sửa flashcard nhưng không được xóa deck hoặc chuyển quyền sở hữu.
+
+## 4.3 Luồng sử dụng đề xuất
+1. Owner mở màn hình chi tiết deck và bấm "Share".
+2. Owner nhập email người nhận hoặc tạo link/mã chia sẻ.
+3. Hệ thống gửi lời mời tham gia deck.
+4. User nhận lời mời, bấm "Join" để thêm deck vào thư viện cá nhân.
+5. Mọi cập nhật nội dung deck từ Owner được đồng bộ cho các user đã tham gia.
+
+## 4.4 Giá trị mang lại
+- Giúp học nhóm nhanh hơn, đặc biệt cho lớp học hoặc team ôn thi.
+- Tránh trùng lặp công sức tạo deck giống nhau.
+- Tăng mức độ gắn kết cộng đồng học tập trong ứng dụng.
+
+

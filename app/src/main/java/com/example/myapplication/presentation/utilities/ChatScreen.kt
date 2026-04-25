@@ -74,6 +74,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.domain.model.VocabSuggestion
+import com.example.myapplication.R
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,11 +116,15 @@ fun ChatScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            Modifier.size(32.dp).clip(CircleShape)
-                                .background(Brush.linearGradient(listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)))),
+                            Modifier.size(36.dp).clip(CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Psychology, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_ai_chat),
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
                         }
                         Spacer(Modifier.width(10.dp))
                         Column {
@@ -203,11 +210,15 @@ private fun ChatBubble(
         ) {
             if (!message.isUser) {
                 Box(
-                    Modifier.size(32.dp).clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Color(0xFF6366F1).copy(alpha = 0.15f), Color(0xFF8B5CF6).copy(alpha = 0.15f)))),
+                    Modifier.size(32.dp).clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF6366F1), modifier = Modifier.size(18.dp))
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_ai_chat),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
                 Spacer(Modifier.width(8.dp))
             }
@@ -471,11 +482,15 @@ private fun TypingIndicator() {
         horizontalArrangement = Arrangement.Start
     ) {
         Box(
-            Modifier.size(32.dp).clip(CircleShape)
-                .background(Color(0xFF6366F1).copy(alpha = 0.1f)),
+            Modifier.size(32.dp).clip(CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF6366F1), modifier = Modifier.size(18.dp))
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.ic_ai_chat),
+                contentDescription = null,
+                modifier = Modifier.size(32.dp).clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
         }
         Spacer(Modifier.width(8.dp))
         Card(

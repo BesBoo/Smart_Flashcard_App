@@ -59,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,13 +68,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.R
 
-private val AccentGreen = Color(0xFF10B981)
+private val AccentOrange = Color(0xFFF97316)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SmartReviewScreen(
+fun FlashcardQuizScreen(
     modifier: Modifier = Modifier,
-    viewModel: SmartReviewViewModel = hiltViewModel(),
+    viewModel: FlashcardQuizViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -87,9 +88,9 @@ fun SmartReviewScreen(
                 title = {
                     Text(
                         when (uiState.phase) {
-                            SmartReviewPhase.SETUP -> "Ôn tập thông minh"
-                            SmartReviewPhase.QUIZ -> "Câu ${uiState.currentIndex + 1}/${uiState.totalQuestions}"
-                            SmartReviewPhase.RESULT -> "Kết quả"
+                            FlashcardQuizPhase.SETUP -> "Trắc nghiệm từ vựng"
+                            FlashcardQuizPhase.QUIZ -> "Câu ${uiState.currentIndex + 1}/${uiState.totalQuestions}"
+                            FlashcardQuizPhase.RESULT -> "Kết quả"
                         },
                         color = cs.onSurface,
                         fontWeight = FontWeight.Bold,
@@ -112,42 +113,42 @@ fun SmartReviewScreen(
             when {
                 uiState.isLoading -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = AccentGreen)
+                        CircularProgressIndicator(color = AccentOrange)
                         Spacer(Modifier.height(16.dp))
-                        Text("Đang tạo câu hỏi biến thể...", color = cs.onSurfaceVariant, fontSize = 14.sp)
+                        Text("Đang tạo câu hỏi...", color = cs.onSurfaceVariant, fontSize = 14.sp)
                     }
                 }
-                uiState.error != null && uiState.phase != SmartReviewPhase.SETUP -> {
+                uiState.error != null && uiState.phase != FlashcardQuizPhase.SETUP -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(32.dp)
                     ) {
                         Text("❌ ${uiState.error}", color = cs.error, textAlign = TextAlign.Center)
                         Spacer(Modifier.height(16.dp))
-                        Button(onClick = { viewModel.restartReview() }) { Text("Thử lại") }
+                        Button(onClick = { viewModel.restartQuiz() }) { Text("Thử lại") }
                     }
                 }
-                uiState.phase == SmartReviewPhase.SETUP -> {
-                    SetupContent(
+                uiState.phase == FlashcardQuizPhase.SETUP -> {
+                    QuizSetupContent(
                         uiState = uiState,
                         onToggleDeck = { viewModel.toggleDeckSelection(it) },
                         onToggleAll = { viewModel.toggleAllDecks() },
                         onQuestionCountChange = { viewModel.updateQuestionCount(it) },
-                        onStart = { viewModel.startReview() }
+                        onStart = { viewModel.startQuiz() }
                     )
                 }
-                uiState.phase == SmartReviewPhase.QUIZ -> {
-                    QuizContent(
+                uiState.phase == FlashcardQuizPhase.QUIZ -> {
+                    QuizPlayContent(
                         uiState = uiState,
                         onSelectAnswer = { viewModel.selectAnswer(it) },
                         onNext = { viewModel.nextQuestion() }
                     )
                 }
-                uiState.phase == SmartReviewPhase.RESULT -> {
-                    ResultContent(
+                uiState.phase == FlashcardQuizPhase.RESULT -> {
+                    QuizResultContent(
                         correct = uiState.correctCount,
                         total = uiState.totalQuestions,
-                        onRestart = { viewModel.restartReview() },
+                        onRestart = { viewModel.restartQuiz() },
                         onBack = onNavigateBack
                     )
                 }
@@ -161,8 +162,8 @@ fun SmartReviewScreen(
 // ════════════════════════════════════════════════════
 
 @Composable
-private fun SetupContent(
-    uiState: SmartReviewUiState,
+private fun QuizSetupContent(
+    uiState: FlashcardQuizUiState,
     onToggleDeck: (String) -> Unit,
     onToggleAll: () -> Unit,
     onQuestionCountChange: (Int) -> Unit,
@@ -175,22 +176,16 @@ private fun SetupContent(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column {
-            // Header
-            Box(
-                modifier = Modifier
-                    .size(52.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_smart_review),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(52.dp)
-                )
-            }
+            // Header icon
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.ic_flashcard_quiz),
+                contentDescription = null,
+                modifier = Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
+            )
             Spacer(Modifier.height(12.dp))
-            Text("Ôn tập thông minh", color = cs.onSurface, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text("Ôn toàn bộ thẻ từ mọi deck với câu hỏi biến thể", color = cs.onSurfaceVariant, fontSize = 14.sp)
+            Text("Trắc nghiệm từ vựng", color = cs.onSurface, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("Chọn đáp án đúng cho mỗi từ vựng", color = cs.onSurfaceVariant, fontSize = 14.sp)
 
             Spacer(Modifier.height(20.dp))
 
@@ -211,7 +206,7 @@ private fun SetupContent(
                     Checkbox(
                         checked = uiState.allDecksSelected,
                         onCheckedChange = { onToggleAll() },
-                        colors = CheckboxDefaults.colors(checkedColor = AccentGreen)
+                        colors = CheckboxDefaults.colors(checkedColor = AccentOrange)
                     )
                     Text("Tất cả deck", color = cs.onSurface, fontWeight = FontWeight.Medium)
                 }
@@ -226,7 +221,7 @@ private fun SetupContent(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) AccentGreen.copy(alpha = 0.08f) else cs.surfaceContainer
+                            containerColor = if (isSelected) AccentOrange.copy(alpha = 0.08f) else cs.surfaceContainer
                         )
                     ) {
                         Row(
@@ -236,7 +231,7 @@ private fun SetupContent(
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = { onToggleDeck(deck.id) },
-                                colors = CheckboxDefaults.colors(checkedColor = AccentGreen)
+                                colors = CheckboxDefaults.colors(checkedColor = AccentOrange)
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(deck.name, color = cs.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -256,7 +251,7 @@ private fun SetupContent(
                 onValueChange = { onQuestionCountChange(it.toInt()) },
                 valueRange = 5f..20f,
                 steps = 2,
-                colors = SliderDefaults.colors(thumbColor = AccentGreen, activeTrackColor = AccentGreen)
+                colors = SliderDefaults.colors(thumbColor = AccentOrange, activeTrackColor = AccentOrange)
             )
 
             if (uiState.error != null) {
@@ -269,10 +264,10 @@ private fun SetupContent(
             onClick = onStart,
             modifier = Modifier.fillMaxWidth().height(52.dp),
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AccentGreen),
+            colors = ButtonDefaults.buttonColors(containerColor = AccentOrange),
             enabled = uiState.selectedDeckIds.isNotEmpty()
         ) {
-            Text("Bắt đầu ôn tập", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Bắt đầu trắc nghiệm", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
@@ -282,13 +277,12 @@ private fun SetupContent(
 // ════════════════════════════════════════════════════
 
 @Composable
-private fun QuizContent(
-    uiState: SmartReviewUiState,
+private fun QuizPlayContent(
+    uiState: FlashcardQuizUiState,
     onSelectAnswer: (Int) -> Unit,
     onNext: () -> Unit
 ) {
     val cs = MaterialTheme.colorScheme
-    val question = uiState.currentQuestion ?: return
 
     Column(
         modifier = Modifier.fillMaxSize().padding(20.dp),
@@ -298,13 +292,12 @@ private fun QuizContent(
             LinearProgressIndicator(
                 progress = { uiState.progress },
                 modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                color = AccentGreen,
+                color = AccentOrange,
                 trackColor = cs.surfaceContainer,
             )
 
             Spacer(Modifier.height(24.dp))
 
-            // Animated question transitions
             AnimatedContent(
                 targetState = uiState.currentIndex,
                 transitionSpec = {
@@ -312,102 +305,103 @@ private fun QuizContent(
                         slideOutHorizontally { -it } + fadeOut()
                     )
                 },
-                label = "question"
+                label = "quizQuestion"
             ) { _ ->
                 val q = uiState.currentQuestion ?: return@AnimatedContent
                 Column {
-            // Cloze sentence
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = cs.surfaceContainer)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        "Điền từ phù hợp:",
-                        color = cs.onSurfaceVariant,
-                        fontSize = 13.sp
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = q.sentence,
-                        color = cs.onSurface,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 28.sp
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // Options
-            q.options.forEachIndexed { index, option ->
-                val isSelected = uiState.selectedAnswer == index
-                val isCorrect = index == q.correctIndex
-                val isRevealed = uiState.isRevealed
-
-                val borderColor by animateColorAsState(
-                    targetValue = when {
-                        isRevealed && isCorrect -> AccentGreen
-                        isRevealed && isSelected && !isCorrect -> cs.error
-                        isSelected -> AccentGreen
-                        else -> cs.outlineVariant.copy(alpha = 0.3f)
-                    },
-                    label = "borderColor"
-                )
-
-                val bgColor by animateColorAsState(
-                    targetValue = when {
-                        isRevealed && isCorrect -> AccentGreen.copy(alpha = 0.1f)
-                        isRevealed && isSelected && !isCorrect -> cs.error.copy(alpha = 0.1f)
-                        else -> Color.Transparent
-                    },
-                    label = "bgColor"
-                )
-
-                OutlinedButton(
-                    onClick = { onSelectAnswer(index) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, borderColor),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = bgColor),
-                    enabled = !isRevealed
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Question card — show the front text (word)
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = cs.surfaceContainer)
                     ) {
-                        Box(
-                            Modifier.size(28.dp).clip(CircleShape)
-                                .background(if (isSelected || (isRevealed && isCorrect)) borderColor else cs.outlineVariant.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                "Nghĩa của từ:",
+                                color = cs.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            Text(
+                                text = q.frontText,
+                                color = cs.onSurface,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                lineHeight = 32.sp
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    // Options
+                    q.options.forEachIndexed { index, option ->
+                        val isSelected = uiState.selectedAnswer == index
+                        val isCorrect = index == q.correctIndex
+                        val isRevealed = uiState.isRevealed
+
+                        val borderColor by animateColorAsState(
+                            targetValue = when {
+                                isRevealed && isCorrect -> AccentOrange
+                                isRevealed && isSelected && !isCorrect -> cs.error
+                                isSelected -> AccentOrange
+                                else -> cs.outlineVariant.copy(alpha = 0.3f)
+                            },
+                            label = "borderColor"
+                        )
+
+                        val bgColor by animateColorAsState(
+                            targetValue = when {
+                                isRevealed && isCorrect -> AccentOrange.copy(alpha = 0.1f)
+                                isRevealed && isSelected && !isCorrect -> cs.error.copy(alpha = 0.1f)
+                                else -> Color.Transparent
+                            },
+                            label = "bgColor"
+                        )
+
+                        OutlinedButton(
+                            onClick = { onSelectAnswer(index) },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.5.dp, borderColor),
+                            colors = ButtonDefaults.outlinedButtonColors(containerColor = bgColor),
+                            enabled = !isRevealed
                         ) {
-                            if (isRevealed && isCorrect) {
-                                Icon(Icons.Default.CheckCircle, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                            } else if (isRevealed && isSelected && !isCorrect) {
-                                Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                            } else {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    Modifier.size(28.dp).clip(CircleShape)
+                                        .background(if (isSelected || (isRevealed && isCorrect)) borderColor else cs.outlineVariant.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isRevealed && isCorrect) {
+                                        Icon(Icons.Default.CheckCircle, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                                    } else if (isRevealed && isSelected && !isCorrect) {
+                                        Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                                    } else {
+                                        Text(
+                                            "${'A' + index}",
+                                            color = if (isSelected) Color.White else cs.onSurfaceVariant,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.width(12.dp))
                                 Text(
-                                    "${'A' + index}",
-                                    color = if (isSelected) Color.White else cs.onSurfaceVariant,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
+                                    text = option,
+                                    color = cs.onSurface,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (isRevealed && isCorrect) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 3
                                 )
                             }
                         }
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = option,
-                            color = cs.onSurface,
-                            fontSize = 16.sp,
-                            fontWeight = if (isRevealed && isCorrect) FontWeight.Bold else FontWeight.Normal
-                        )
                     }
                 }
             }
-                } // end Column inside AnimatedContent
-            } // end AnimatedContent
         }
 
         // Next button
@@ -416,7 +410,7 @@ private fun QuizContent(
                 onClick = onNext,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
                 Text(
                     if (uiState.currentIndex + 1 >= uiState.totalQuestions) "Xem kết quả" else "Câu tiếp theo",
@@ -433,7 +427,7 @@ private fun QuizContent(
 // ════════════════════════════════════════════════════
 
 @Composable
-private fun ResultContent(
+private fun QuizResultContent(
     correct: Int,
     total: Int,
     onRestart: () -> Unit,
@@ -450,7 +444,7 @@ private fun ResultContent(
         Icon(
             Icons.Default.EmojiEvents,
             null,
-            tint = if (percentage >= 70) AccentGreen else Color(0xFFF59E0B),
+            tint = if (percentage >= 70) AccentOrange else Color(0xFFF59E0B),
             modifier = Modifier.size(72.dp)
         )
         Spacer(Modifier.height(16.dp))
@@ -472,7 +466,7 @@ private fun ResultContent(
             fontWeight = FontWeight.Medium
         )
 
-        // Score bar
+        // Animated score bar
         Spacer(Modifier.height(20.dp))
         val animatedProgress by animateFloatAsState(
             targetValue = if (total > 0) correct.toFloat() / total else 0f,
@@ -482,7 +476,7 @@ private fun ResultContent(
         LinearProgressIndicator(
             progress = { animatedProgress },
             modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-            color = if (percentage >= 70) AccentGreen else Color(0xFFF59E0B),
+            color = if (percentage >= 70) AccentOrange else Color(0xFFF59E0B),
             trackColor = cs.surfaceContainer,
         )
 
@@ -492,11 +486,11 @@ private fun ResultContent(
             onClick = onRestart,
             modifier = Modifier.fillMaxWidth().height(52.dp),
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
         ) {
             Icon(Icons.Default.Refresh, null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Ôn lại", fontWeight = FontWeight.Bold)
+            Text("Làm lại", fontWeight = FontWeight.Bold)
         }
 
         Spacer(Modifier.height(12.dp))

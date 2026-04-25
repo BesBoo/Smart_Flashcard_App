@@ -30,6 +30,7 @@ sealed class Screen(val route: String, val title: String? = null, val icon: Imag
     // Sub-screens under Utilities
     object AiChat : Screen("ai_chat")
     object SmartReview : Screen("smart_review")
+    object FlashcardQuiz : Screen("flashcard_quiz")
 
     /** Admin drawer navigation items */
     object AdminDashboard : Screen("admin_dashboard", "Dashboard", Icons.Default.Dashboard)
