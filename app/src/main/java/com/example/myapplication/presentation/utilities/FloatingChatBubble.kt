@@ -18,21 +18,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,29 +36,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 import com.example.myapplication.R
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import kotlin.math.roundToInt
 
 /**
  * In-app floating chat bubble.
- * Overlays on all screens within the app. Draggable. Tap to open chat.
+ * Overlays on all screens within the app. Draggable. Tap to open chat overlay.
  * No system permissions required — purely Compose overlay.
  */
 @Composable
 fun FloatingChatBubble(
     isVisible: Boolean,
-    onOpenChat: () -> Unit,
+    chatBubbleState: ChatBubbleState,
     modifier: Modifier = Modifier
 ) {
     if (!isVisible) return
@@ -94,6 +87,16 @@ fun FloatingChatBubble(
         animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow),
         label = "snapX"
     )
+
+    // Report bubble position to ChatBubbleState for animation origin
+    LaunchedEffect(animatedOffsetX, offsetY) {
+        if (screenWidthPx > 0 && screenHeightPx > 0) {
+            chatBubbleState.updateBubblePosition(
+                normalizedX = ((animatedOffsetX + bubbleSizePx / 2) / screenWidthPx).coerceIn(0f, 1f),
+                normalizedY = ((offsetY + bubbleSizePx / 2) / screenHeightPx).coerceIn(0f, 1f)
+            )
+        }
+    }
 
     // Pulse ring animation for discoverability
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -160,7 +163,7 @@ fun FloatingChatBubble(
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { onOpenChat() }
+                        onTap = { chatBubbleState.openChat() }
                     )
                 },
             contentAlignment = Alignment.Center
@@ -173,7 +176,7 @@ fun FloatingChatBubble(
             )
         }
 
-        // Tooltip label (shows briefly, optional enhancement)
+        // Tooltip label (shows briefly while dragging)
         AnimatedVisibility(
             visible = isDragging,
             enter = fadeIn() + scaleIn(),
