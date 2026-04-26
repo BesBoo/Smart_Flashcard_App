@@ -69,27 +69,27 @@ fun MainScreen(
                 visible = isChatOpen,
                 enter = scaleIn(
                     animationSpec = spring(
-                        dampingRatio = 0.85f,
-                        stiffness = Spring.StiffnessMediumLow
+                        dampingRatio = 1f,
+                        stiffness = 200f
                     ),
                     transformOrigin = TransformOrigin(
                         chatBubbleState?.bubbleNormalizedX ?: 1f,
                         chatBubbleState?.bubbleNormalizedY ?: 0.7f
                     )
                 ) + fadeIn(
-                    animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                    animationSpec = androidx.compose.animation.core.tween(400)
                 ),
                 exit = scaleOut(
                     animationSpec = spring(
-                        dampingRatio = 0.85f,
-                        stiffness = Spring.StiffnessMediumLow
+                        dampingRatio = 1f,
+                        stiffness = 200f
                     ),
                     transformOrigin = TransformOrigin(
                         chatBubbleState?.bubbleNormalizedX ?: 1f,
                         chatBubbleState?.bubbleNormalizedY ?: 0.7f
                     )
                 ) + fadeOut(
-                    animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                    animationSpec = androidx.compose.animation.core.tween(300)
                 )
             ) {
                 ChatScreen(

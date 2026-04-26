@@ -1,9 +1,16 @@
 package com.example.myapplication.presentation.navigation
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -24,6 +31,41 @@ import com.example.myapplication.presentation.share.JoinDeckScreen
 import com.example.myapplication.presentation.stats.StatsScreen
 import com.example.myapplication.presentation.study.StudySessionScreen
 
+private const val TAB_TRANSITION_DURATION_MS = 360
+private val bottomTabRoutes = Screen.bottomNavItems.map { it.route }
+
+private fun bottomTabIndex(route: String?): Int = bottomTabRoutes.indexOf(route)
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.tabDirection(): Int {
+    val from = bottomTabIndex(initialState.destination.route)
+    val to = bottomTabIndex(targetState.destination.route)
+    return when {
+        from == -1 || to == -1 || from == to -> 0
+        to > from -> 1
+        else -> -1
+    }
+}
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.tabEnterTransition(): EnterTransition {
+    val direction = tabDirection()
+    if (direction == 0) return EnterTransition.None
+
+    return slideInHorizontally(
+        animationSpec = tween(TAB_TRANSITION_DURATION_MS),
+        initialOffsetX = { width -> if (direction > 0) width else -width }
+    ) + fadeIn(animationSpec = tween(TAB_TRANSITION_DURATION_MS))
+}
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.tabExitTransition(): ExitTransition {
+    val direction = tabDirection()
+    if (direction == 0) return ExitTransition.None
+
+    return slideOutHorizontally(
+        animationSpec = tween(TAB_TRANSITION_DURATION_MS),
+        targetOffsetX = { width -> if (direction > 0) -width else width }
+    ) + fadeOut(animationSpec = tween(TAB_TRANSITION_DURATION_MS))
+}
+
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
@@ -36,14 +78,26 @@ fun MainNavGraph(
         modifier = modifier
     ) {
         // ── Bottom Navigation Tabs ──
-        composable(route = Screen.Home.route) {
+        composable(
+            route = Screen.Home.route,
+            enterTransition = { tabEnterTransition() },
+            exitTransition = { tabExitTransition() },
+            popEnterTransition = { tabEnterTransition() },
+            popExitTransition = { tabExitTransition() }
+        ) {
             HomeScreen(
                 onStartStudyClick = {
                     navController.navigate(Screen.StudySession.createRoute("all"))
                 }
             )
         }
-        composable(route = Screen.Decks.route) {
+        composable(
+            route = Screen.Decks.route,
+            enterTransition = { tabEnterTransition() },
+            exitTransition = { tabExitTransition() },
+            popEnterTransition = { tabEnterTransition() },
+            popExitTransition = { tabExitTransition() }
+        ) {
             DecksScreen(
                 onDeckClick = { deckId ->
                     navController.navigate(Screen.DeckDetail.createRoute(deckId))
@@ -54,7 +108,13 @@ fun MainNavGraph(
                 }
             )
         }
-        composable(route = Screen.Utilities.route) {
+        composable(
+            route = Screen.Utilities.route,
+            enterTransition = { tabEnterTransition() },
+            exitTransition = { tabExitTransition() },
+            popEnterTransition = { tabEnterTransition() },
+            popExitTransition = { tabExitTransition() }
+        ) {
             UtilitiesHubScreen(
                 onOpenAiChat = {
                     navController.navigate(Screen.AiChat.route)
@@ -67,10 +127,22 @@ fun MainNavGraph(
                 }
             )
         }
-        composable(route = Screen.Stats.route) {
+        composable(
+            route = Screen.Stats.route,
+            enterTransition = { tabEnterTransition() },
+            exitTransition = { tabExitTransition() },
+            popEnterTransition = { tabEnterTransition() },
+            popExitTransition = { tabExitTransition() }
+        ) {
             StatsScreen()
         }
-        composable(route = Screen.Settings.route) {
+        composable(
+            route = Screen.Settings.route,
+            enterTransition = { tabEnterTransition() },
+            exitTransition = { tabExitTransition() },
+            popEnterTransition = { tabEnterTransition() },
+            popExitTransition = { tabExitTransition() }
+        ) {
             SettingsScreen(onLogout = onLogout)
         }
 
