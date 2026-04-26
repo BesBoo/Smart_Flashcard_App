@@ -256,11 +256,7 @@ private fun HeroCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Brush.linearGradient(
-                        colors = HeroGradient,
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(Float.MAX_VALUE, Float.MAX_VALUE)
-                    )
+                    Brush.linearGradient(colors = HeroGradient)
                 )
                 .padding(20.dp)
         ) {
