@@ -88,6 +88,9 @@ fun MainNavGraph(
             HomeScreen(
                 onStartStudyClick = {
                     navController.navigate(Screen.StudySession.createRoute("all"))
+                },
+                onDeckClick = { deckId ->
+                    navController.navigate(Screen.DeckDetail.createRoute(deckId))
                 }
             )
         }

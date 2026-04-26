@@ -3,6 +3,7 @@ package com.example.myapplication.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.sync.SyncScheduler
+import com.example.myapplication.domain.model.Deck
 import com.example.myapplication.domain.model.LearningStats
 import com.example.myapplication.domain.repository.DeckRepository
 import com.example.myapplication.domain.repository.ReviewLogRepository
@@ -25,7 +26,9 @@ data class HomeUiState(
     val stats: LearningStats? = null,
     val error: String? = null,
     val lastSyncResult: SyncResult? = null,
-    val pendingChanges: Int = 0
+    val pendingChanges: Int = 0,
+    // Recent decks with due counts
+    val recentDecks: List<Deck> = emptyList()
 )
 
 enum class SyncResult { SUCCESS, FAILED, IN_PROGRESS }
@@ -80,11 +83,21 @@ class HomeViewModel @Inject constructor(
                         null
                     }
 
+                    // Load recent decks (sorted by most cards due, then newest)
+                    val decks = try {
+                        deckRepository.getDecksByUser(userId)
+                            .sortedByDescending { it.dueCount }
+                            .take(5) // Show top 5 recent/due decks
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             userName = userName,
-                            stats = stats
+                            stats = stats,
+                            recentDecks = decks
                         )
                     }
                 } else {

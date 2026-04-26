@@ -1,6 +1,7 @@
 package com.example.myapplication.presentation.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.SyncProblem
@@ -32,45 +34,57 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.domain.model.Deck
 import com.example.myapplication.domain.model.LearningStats
-import com.example.myapplication.ui.theme.GradientEnd
-import com.example.myapplication.ui.theme.GradientStart
 import com.example.myapplication.ui.theme.QualityAgain
 import com.example.myapplication.ui.theme.QualityGood
 import com.example.myapplication.ui.theme.QualityHard
 import com.example.myapplication.ui.theme.StreakFlame
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+
+// ════════════════════════════════════════════════════
+//  Color Palette
+// ════════════════════════════════════════════════════
+private val PrimaryIndigo = Color(0xFF4F46E5)
+private val PrimaryDark = Color(0xFF3730A3)
+private val HeroGradient = listOf(PrimaryIndigo, Color(0xFF6366F1))
+private val WarningBadgeBg = Color(0xFFFEF3C7)
+private val WarningBadgeText = Color(0xFF92400E)
+private val BorderColor = Color(0xFFE2E8F0)
+private val TextPrimary = Color(0xFF0F172A)
+private val TextSecondary = Color(0xFF64748B)
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onStartStudyClick: () -> Unit = {}
+    onStartStudyClick: () -> Unit = {},
+    onDeckClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
     val cs = MaterialTheme.colorScheme
 
-    // Refresh stats every time this screen enters composition (tab switch, navigateUp, etc.)
+    // Refresh stats every time this screen enters composition
     val refreshKey = remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
-        refreshKey.value++ // trigger on first composition
+        refreshKey.value++
     }
-    // Also refresh whenever we return to this composable (e.g., after study session)
     DisposableEffect(Unit) {
         viewModel.refresh()
         onDispose { }
@@ -87,8 +101,8 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp)
     ) {
+        // ── 1. HEADER ──
         item {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -96,7 +110,7 @@ fun HomeScreen(
             ) {
                 Column {
                     Text(
-                        text = "Chào buổi sáng,",
+                        text = getGreeting(),
                         color = cs.onSurfaceVariant,
                         fontSize = 14.sp
                     )
@@ -109,7 +123,6 @@ fun HomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Sync status indicator
                     SyncIndicator(
                         isSyncing = isSyncing,
                         lastResult = uiState.lastSyncResult,
@@ -134,24 +147,27 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-
-        item {
-            // Quick Start Card
-            QuickStartCard(
-                cardsToReview = uiState.stats?.dueCards ?: 0,
-                onClick = onStartStudyClick
-            )
-
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+        // ── 2. HERO — Continue Learning ──
         item {
-            // Stats & Streak row
+            HeroCard(
+                cardsToReview = uiState.stats?.dueCards ?: 0,
+                deckNames = uiState.recentDecks
+                    .filter { it.dueCount > 0 }
+                    .map { it.name },
+                onClick = onStartStudyClick
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        // ── 3. QUICK STATS ROW ──
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     StatCard(
@@ -175,8 +191,36 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+        // ── 4. RECENT DECKS ──
+        if (uiState.recentDecks.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Deck gần đây",
+                    color = cs.onSurface,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            items(
+                items = uiState.recentDecks,
+                key = { it.id }
+            ) { deck ->
+                RecentDeckCard(
+                    deck = deck,
+                    onClick = { onDeckClick(deck.id) }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(14.dp))
+            }
+        }
+
+        // ── 5. MEMORY PROGRESS ──
         item {
-            // Section Title
             Text(
                 text = "Tổng quan học tập",
                 color = cs.onSurface,
@@ -185,7 +229,6 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Mastery breakdown
             uiState.stats?.let { stats ->
                 MasteryProgress(stats)
             }
@@ -193,61 +236,74 @@ fun HomeScreen(
     }
 }
 
+// ════════════════════════════════════════════════════
+//  Hero Card
+// ════════════════════════════════════════════════════
+
 @Composable
-private fun QuickStartCard(
+private fun HeroCard(
     cardsToReview: Int,
+    deckNames: List<String>,
     onClick: () -> Unit
 ) {
-    val cs = MaterialTheme.colorScheme
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-
-    // Hero card swaps: Light mode → dark bg, Dark mode → light bg
-    val gradientColors = if (isDark) {
-        listOf(Color(0xFFE3F6F5), Color(0xFFBAE8E8)) // Mint/teal gradient (sáng)
-    } else {
-        listOf(GradientStart, GradientEnd)            // Dark navy gradient
-    }
-    val heroTextColor = if (isDark) Color.Black else Color.White
-    val heroSubTextColor = if (isDark) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.8f)
-    val heroBtnBg = if (isDark) Color(0xFF272343) else Color.White
-    val heroBtnText = if (isDark) Color.White else Color(0xFF272343)
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Brush.linearGradient(colors = gradientColors)
+                    Brush.linearGradient(
+                        colors = HeroGradient,
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset(Float.MAX_VALUE, Float.MAX_VALUE)
+                    )
                 )
-                .padding(24.dp)
+                .padding(20.dp)
         ) {
             Column {
                 Text(
                     text = "Sẵn sàng học chưa?",
-                    color = heroSubTextColor,
+                    color = Color.White.copy(alpha = 0.85f),
                     fontSize = 14.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = "Bạn có $cardsToReview thẻ cần ôn tập",
-                    color = heroTextColor,
-                    fontSize = 20.sp,
+                    text = if (cardsToReview > 0) "$cardsToReview thẻ cần ôn hôm nay"
+                    else "Bạn đã ôn xong! 🎉",
+                    color = Color.White,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
+
+                // Show deck names that have due cards
+                if (deckNames.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = deckNames.joinToString(" • "),
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = heroBtnBg,
-                        contentColor = heroBtnText
+                        containerColor = Color.White,
+                        contentColor = PrimaryIndigo
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
+                    modifier = Modifier.height(48.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
@@ -256,14 +312,100 @@ private fun QuickStartCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Ôn tập ngay",
-                        fontWeight = FontWeight.Bold
+                        text = "Bắt đầu học",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
                     )
                 }
             }
         }
     }
 }
+
+// ════════════════════════════════════════════════════
+//  Recent Deck Card
+// ════════════════════════════════════════════════════
+
+@Composable
+private fun RecentDeckCard(
+    deck: Deck,
+    onClick: () -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = cs.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, cs.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Deck icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(PrimaryIndigo.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.MenuBook,
+                    contentDescription = null,
+                    tint = PrimaryIndigo,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            // Deck name
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = deck.name,
+                    color = cs.onSurface,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${deck.cardCount} thẻ",
+                    color = cs.onSurfaceVariant,
+                    fontSize = 12.sp
+                )
+            }
+
+            // Due badge
+            if (deck.dueCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(WarningBadgeBg)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "${deck.dueCount} cần ôn",
+                        color = WarningBadgeText,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════
+//  Stat Card
+// ════════════════════════════════════════════════════
 
 @Composable
 private fun StatCard(
@@ -304,6 +446,10 @@ private fun StatCard(
     }
 }
 
+// ════════════════════════════════════════════════════
+//  Mastery Progress
+// ════════════════════════════════════════════════════
+
 @Composable
 private fun MasteryProgress(stats: LearningStats) {
     val cs = MaterialTheme.colorScheme
@@ -338,7 +484,6 @@ private fun MasteryProgress(stats: LearningStats) {
                         if (again > 0f) Box(modifier = Modifier.weight(again / total).fillMaxSize().background(QualityAgain))
                     }
                 } else {
-                    // No data — show empty bar
                     Box(modifier = Modifier.fillMaxSize().background(cs.outlineVariant.copy(alpha = 0.3f)))
                 }
             }
@@ -365,6 +510,10 @@ private fun LegendItem(label: String, color: Color) {
         Text(text = label, color = cs.onSurfaceVariant, fontSize = 12.sp)
     }
 }
+
+// ════════════════════════════════════════════════════
+//  Sync Indicator
+// ════════════════════════════════════════════════════
 
 @Composable
 fun SyncIndicator(
@@ -406,5 +555,18 @@ fun SyncIndicator(
                 modifier = Modifier.size(24.dp)
             )
         }
+    }
+}
+
+// ════════════════════════════════════════════════════
+//  Helpers
+// ════════════════════════════════════════════════════
+
+private fun getGreeting(): String {
+    val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    return when {
+        hour < 12 -> "Chào buổi sáng,"
+        hour < 18 -> "Chào buổi chiều,"
+        else -> "Chào buổi tối,"
     }
 }
