@@ -93,6 +93,7 @@ fun MainScreen(
                 )
             ) {
                 ChatScreen(
+                    modifier = Modifier.padding(innerPadding),
                     onNavigateBack = { chatBubbleState?.closeChat() }
                 )
             }
