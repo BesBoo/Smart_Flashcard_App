@@ -439,7 +439,7 @@ Trả về JSON array (KHÔNG markdown, CHỈ JSON):
     {
         _currentPromptType.Value = "TutorChat";
         _currentUserId.Value = userId;
-        var systemPrompt = $@"Bạn là AI Tutor — trợ lý học tập thông minh cho ứng dụng flashcard. 
+        var systemPrompt = $@"Bạn là Memo — trợ lý học tập thông minh cho ứng dụng flashcard. 
 Ngôn ngữ giao tiếp: {language}.
 Nhiệm vụ:
 - Giải thích từ vựng, khái niệm
