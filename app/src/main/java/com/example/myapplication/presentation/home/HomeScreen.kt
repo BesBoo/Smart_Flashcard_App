@@ -74,7 +74,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     onStartStudyClick: () -> Unit = {},
-    onDeckClick: (String) -> Unit = {}
+    onDeckClick: (String) -> Unit = {},
+    onAvatarClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
@@ -134,7 +135,8 @@ fun HomeScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(cs.primary),
+                            .background(cs.primary)
+                            .clickable { onAvatarClick() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

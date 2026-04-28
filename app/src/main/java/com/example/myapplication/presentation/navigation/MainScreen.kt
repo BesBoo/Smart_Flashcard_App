@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.presentation.catpet.CatPetOverlay
 import com.example.myapplication.presentation.utilities.ChatBubbleState
 import com.example.myapplication.presentation.utilities.ChatScreen
 import com.example.myapplication.presentation.utilities.FloatingChatBubble
@@ -52,6 +53,13 @@ fun MainScreen(
                 navController = navController,
                 modifier = Modifier.padding(innerPadding),
                 onLogout = onLogout
+            )
+
+            // Cat pet overlay — walks on top of the bottom navbar
+            CatPetOverlay(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = innerPadding.calculateBottomPadding() * 0.80f)
             )
 
             // Floating Chat Bubble overlay (above all screens)

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
@@ -149,6 +150,10 @@ fun SettingsScreen(
             SettingsCard {
                 SettingsToggleItem(Icons.Default.DarkMode, "Chế độ tối", isDarkMode) {
                     ThemeManager.setDarkMode(context, it)
+                }
+                SettingsHDivider()
+                SettingsToggleItem(Icons.Default.ChatBubble, "Bong bóng chat", uiState.isBubbleEnabled) {
+                    viewModel.toggleBubble(it)
                 }
                 SettingsHDivider()
                 SettingsItem(Icons.Default.Language, "Ngôn ngữ", "Tiếng Việt") {}

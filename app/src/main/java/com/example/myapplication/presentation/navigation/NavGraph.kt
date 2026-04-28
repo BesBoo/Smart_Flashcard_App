@@ -91,6 +91,13 @@ fun MainNavGraph(
                 },
                 onDeckClick = { deckId ->
                     navController.navigate(Screen.DeckDetail.createRoute(deckId))
+                },
+                onAvatarClick = {
+                    navController.navigate(Screen.Settings.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }

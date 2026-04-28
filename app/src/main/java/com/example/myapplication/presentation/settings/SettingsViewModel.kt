@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.notification.ReminderScheduler
 import com.example.myapplication.domain.model.User
 import com.example.myapplication.domain.repository.UserRepository
+import com.example.myapplication.presentation.utilities.ChatBubbleState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ data class SettingsUiState(
     val reminderEnabled: Boolean = false,
     val reminderHour: Int = 20,
     val reminderMinute: Int = 0,
+    val isBubbleEnabled: Boolean = false,
     val emailUpdateResult: String? = null,
     val emailUpdateError: String? = null,
     val isUpdatingEmail: Boolean = false
@@ -33,6 +35,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val reminderScheduler: ReminderScheduler,
+    private val chatBubbleState: ChatBubbleState,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -43,7 +46,22 @@ class SettingsViewModel @Inject constructor(
         context.getSharedPreferences("study_settings", Context.MODE_PRIVATE)
     }
 
-    init { loadUser() }
+    init {
+        loadUser()
+        observeBubble()
+    }
+
+    private fun observeBubble() {
+        viewModelScope.launch {
+            chatBubbleState.isEnabled.collect { enabled ->
+                _uiState.update { it.copy(isBubbleEnabled = enabled) }
+            }
+        }
+    }
+
+    fun toggleBubble(enabled: Boolean) {
+        chatBubbleState.setEnabled(enabled)
+    }
 
     private fun loadUser() {
         viewModelScope.launch {

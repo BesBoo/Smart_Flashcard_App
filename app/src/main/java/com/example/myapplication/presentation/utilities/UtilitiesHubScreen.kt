@@ -162,20 +162,6 @@ fun UtilitiesHubScreen(
             subtitle = "Coming soon"
         )
 
-        Spacer(Modifier.height(24.dp))
-
-        // ═══════════════════════════════════════════
-        // 4️⃣ SETTINGS
-        // ═══════════════════════════════════════════
-        SectionHeader("Cài đặt nhanh")
-
-        Spacer(Modifier.height(12.dp))
-
-        FloatingChatToggle(
-            isEnabled = uiState.isBubbleEnabled,
-            onToggle = { viewModel.toggleBubble(it) }
-        )
-
         Spacer(Modifier.height(32.dp))
     }
 }

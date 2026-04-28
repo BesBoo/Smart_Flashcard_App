@@ -56,7 +56,7 @@ data class DailyStats(
  */
 data class LearningStats(
     val totalCards: Int,
-    val masteredCards: Int,          // repetition >= 3 and easeFactor >= 2.5
+    val masteredCards: Int,          // repetition >= 3 and easeFactor >= 2.0
     val learningCards: Int,          // repetition > 0 and not mastered
     val newCards: Int,               // totalReviews == 0
     val dueCards: Int = 0,           // cards due for review now

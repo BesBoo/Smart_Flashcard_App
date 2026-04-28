@@ -65,8 +65,8 @@ class GetLearningStatsUseCase @Inject constructor(
 
         return LearningStats(
             totalCards = allCards.size,
-            masteredCards = allCards.count { it.sm2.repetition >= 3 && it.sm2.easeFactor >= 2.5 },
-            learningCards = allCards.count { it.sm2.totalReviews > 0 && !(it.sm2.repetition >= 3 && it.sm2.easeFactor >= 2.5) },
+            masteredCards = allCards.count { it.sm2.repetition >= 3 && it.sm2.easeFactor >= 2.0 },
+            learningCards = allCards.count { it.sm2.totalReviews > 0 && !(it.sm2.repetition >= 3 && it.sm2.easeFactor >= 2.0) },
             newCards = allCards.count { it.sm2.totalReviews == 0 },
             dueCards = dueCards,
             currentStreak = currentStreak,
