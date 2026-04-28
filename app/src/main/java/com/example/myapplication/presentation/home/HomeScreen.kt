@@ -191,7 +191,24 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // ── 4. RECENT DECKS ──
+        // ── 4. MEMORY PROGRESS ──
+        item {
+            Text(
+                text = "Tổng quan học tập",
+                color = cs.onSurface,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            uiState.stats?.let { stats ->
+                MasteryProgress(stats)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // ── 5. RECENT DECKS ──
         if (uiState.recentDecks.isNotEmpty()) {
             item {
                 Text(
@@ -212,25 +229,6 @@ fun HomeScreen(
                     onClick = { onDeckClick(deck.id) }
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(14.dp))
-            }
-        }
-
-        // ── 5. MEMORY PROGRESS ──
-        item {
-            Text(
-                text = "Tổng quan học tập",
-                color = cs.onSurface,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            uiState.stats?.let { stats ->
-                MasteryProgress(stats)
             }
         }
     }

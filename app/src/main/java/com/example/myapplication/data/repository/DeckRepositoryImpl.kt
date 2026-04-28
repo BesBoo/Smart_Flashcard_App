@@ -54,7 +54,11 @@ class DeckRepositoryImpl @Inject constructor(
         }
 
     override suspend fun getDecksByUser(userId: String): List<Deck> =
-        deckDao.getDecksByUser(userId).toDomainDecks()
+        deckDao.getDecksByUser(userId).map { entity ->
+            val cardCount = deckDao.getCardCountByDeck(entity.id)
+            val dueCount = deckDao.getDueCountByDeck(entity.id)
+            entity.toDomain(cardCount = cardCount, dueCount = dueCount)
+        }
 
     override suspend fun getDeckById(deckId: String): Deck? =
         deckDao.getDeckById(deckId)?.toDomain()

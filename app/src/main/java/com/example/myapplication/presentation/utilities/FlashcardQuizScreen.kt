@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -175,7 +177,7 @@ private fun QuizSetupContent(
         modifier = Modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             // Header icon
             androidx.compose.foundation.Image(
                 painter = painterResource(id = R.drawable.ic_flashcard_quiz),
@@ -214,7 +216,13 @@ private fun QuizSetupContent(
 
             Spacer(Modifier.height(8.dp))
 
-            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+            val deckListState = rememberLazyListState()
+            LazyColumn(
+                state = deckListState,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .simpleVerticalScrollbar(deckListState, AccentOrange)
+            ) {
                 items(uiState.decks) { deck ->
                     val isSelected = deck.id in uiState.selectedDeckIds
                     Card(
