@@ -13,12 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.presentation.catpet.CatHungerManager
+import com.example.myapplication.presentation.catpet.CatPetController
 import com.example.myapplication.presentation.catpet.CatPetOverlay
+import com.example.myapplication.presentation.catpet.RewardType
 import com.example.myapplication.presentation.utilities.ChatBubbleState
 import com.example.myapplication.presentation.utilities.ChatScreen
 import com.example.myapplication.presentation.utilities.FloatingChatBubble
@@ -29,6 +35,7 @@ fun MainScreen(
     chatBubbleState: ChatBubbleState? = null
 ) {
     val navController = rememberNavController()
+    val context = LocalContext.current
     val isBubbleEnabled by (chatBubbleState?.isEnabled
         ?: kotlinx.coroutines.flow.MutableStateFlow(false)).collectAsState()
     val isChatOpen by (chatBubbleState?.isChatOpen
@@ -39,6 +46,53 @@ fun MainScreen(
         .collectAsState(initial = null)
     val isOnBottomNavScreen = currentRoute?.destination?.route in
             Screen.bottomNavItems.map { it.route }
+
+    // ── Shared pet state ─────────────────────────────────
+    val hungerManager = remember { CatHungerManager(context) }
+    val catController = remember { CatPetController() }
+
+    // ── Initialize hunger + check rewards on first composition ──
+    LaunchedEffect(Unit) {
+        hungerManager.init()
+        catController.setHungerBand(hungerManager.getHungerBand())
+
+        // Check for pending fish rewards (from a previous study session)
+        val pendingFish = hungerManager.takePendingFish()
+        if (pendingFish > 0) {
+            catController.feedFish(
+                count = pendingFish,
+                celebrate = pendingFish >= 3
+            )
+        }
+    }
+
+    // ── Show bubble when returning to bottom nav tabs ────
+    LaunchedEffect(isOnBottomNavScreen) {
+        if (isOnBottomNavScreen && hungerManager.shouldShowBubble()) {
+            // Estimate dueCards from hunger context (simplified)
+            val dueCards = 0 // Will show generic message; exact count requires ViewModel
+            val message = hungerManager.getBubbleMessage(dueCards)
+            catController.showBubble(message)
+            hungerManager.markBubbleShown()
+        }
+    }
+
+    // ── Update hunger band periodically ──────────────────
+    LaunchedEffect(isOnBottomNavScreen) {
+        if (isOnBottomNavScreen) {
+            hungerManager.init() // Recalculate hunger from time
+            catController.setHungerBand(hungerManager.getHungerBand())
+
+            // Check pending fish again (user might have just finished a session)
+            val pendingFish = hungerManager.takePendingFish()
+            if (pendingFish > 0) {
+                catController.feedFish(
+                    count = pendingFish,
+                    celebrate = pendingFish >= 3
+                )
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -59,7 +113,8 @@ fun MainScreen(
             CatPetOverlay(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = innerPadding.calculateBottomPadding() * 0.80f)
+                    .padding(bottom = innerPadding.calculateBottomPadding() * 0.80f),
+                controller = catController
             )
 
             // Floating Chat Bubble overlay (above all screens)

@@ -11,6 +11,7 @@ import com.example.myapplication.domain.repository.AdaptiveHintResult
 import com.example.myapplication.domain.repository.FlashcardRepository
 import com.example.myapplication.domain.repository.UserRepository
 import com.example.myapplication.domain.usecase.ReviewCardUseCase
+import com.example.myapplication.presentation.catpet.CatHungerManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +64,8 @@ class StudySessionViewModel @Inject constructor(
     private val prefs by lazy {
         context.getSharedPreferences("study_settings", android.content.Context.MODE_PRIVATE)
     }
+
+    private val hungerManager by lazy { CatHungerManager(context) }
 
     init {
         loadCards()
@@ -154,6 +157,9 @@ class StudySessionViewModel @Inject constructor(
                 // Log but don't block the session
             }
 
+            // Pet motivation: reduce hunger per card reviewed
+            hungerManager.onCardReviewed()
+
             val newCorrect = currentState.correctCount + if (isCorrect) 1 else 0
             val newIncorrect = currentState.incorrectCount + if (!isCorrect) 1 else 0
             val updatedDifficult = if (isDifficult) {
@@ -184,6 +190,10 @@ class StudySessionViewModel @Inject constructor(
                         )
                     )
                 }
+
+                // Pet motivation: reward fish based on cards studied
+                val totalCards = currentState.cards.size
+                hungerManager.onSessionComplete(totalCards)
             } else {
                 _uiState.update {
                     it.copy(

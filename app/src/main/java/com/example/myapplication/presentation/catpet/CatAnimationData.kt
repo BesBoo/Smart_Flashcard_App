@@ -10,7 +10,7 @@ package com.example.myapplication.presentation.catpet
 object SpriteSheet {
     const val COLUMNS = 5
     const val ROWS = 5
-    const val TOTAL_FRAMES = 25
+    const val TOTAL_FRAMES = 29
 }
 
 // ── Per-frame Y offset (dp) to stabilize anchor ──────────
@@ -20,7 +20,8 @@ object FrameOffsets {
         -6f, -1f, 4f, 5f, -2f,      // 6–10
         8f, 7f, 10f, -4f, -1f,      // 11–15
         4f, 3f, -6f, 4f, 0f,        // 16–20
-        -5f, -1f, -1f, 5f, 6f       // 21–25
+        -5f, -1f, -1f, 5f, 6f,      // 21–25
+        3f, 2f, -2f, 0f             // 26–29 (eat-fish frames)
     )
     fun getOffset(frameIndex: Int): Float =
         yOffsetDp.getOrElse(frameIndex - 1) { 0f }
@@ -36,7 +37,8 @@ object WalkFrameData {
         CatAnimation.STRETCH_TO_WALK,
         CatAnimation.WALK_TO_JUMP,
         CatAnimation.IDLE_TO_WALK,
-        CatAnimation.WALK_TO_IDLE
+        CatAnimation.WALK_TO_IDLE,
+        CatAnimation.CAT_MOVE_TO_FISH
     )
 
     private val frameStepWeight = mapOf(
@@ -178,6 +180,22 @@ enum class CatAnimation(
         movement = CatMovement.STATIONARY,
         looping = false,
         frameDurationMs = 300L
+    ),
+
+    // ── Eat-fish animations (reward) ──────────────────
+    /** Walk toward the fish */
+    CAT_MOVE_TO_FISH(
+        frames = listOf(9,9,3,2,3,2,3,2,3,2,3,2,9,9),
+        movement = CatMovement.WALKING,
+        looping = false,
+        frameDurationMs = 150L
+    ),
+    /** Eat the fish */
+    EAT_FISH_SEQUENCE(
+        frames = listOf(28,28,26,26,26,27,27,29,29,8,8,8,8,8),
+        movement = CatMovement.STATIONARY,
+        looping = false,
+        frameDurationMs = 180L
     );
 }
 
@@ -233,12 +251,62 @@ object TransitionMap {
         CatAnimation.SLEEP_SEQUENCE to CatAnimation.WAKE_UP,
         CatAnimation.WAKE_UP to CatAnimation.IDLE_VARIATION,
         CatAnimation.CELEBRATE_SEQUENCE to CatAnimation.IDLE_VARIATION,
-        CatAnimation.STRETCH_TO_WALK to CatAnimation.WALK_LOOP
+        CatAnimation.STRETCH_TO_WALK to CatAnimation.WALK_LOOP,
+        // Eat-fish chain
+        CatAnimation.CAT_MOVE_TO_FISH to CatAnimation.EAT_FISH_SEQUENCE,
+        CatAnimation.EAT_FISH_SEQUENCE to CatAnimation.IDLE_VARIATION
     )
 
-    /** Pick next animation for a looping animation (weighted random) */
-    fun pickNext(current: CatAnimation, canSleep: Boolean): CatAnimation {
-        val options = weightedTransitions[current]
+    // ── Hunger-based transition tables ────────────────────
+    private val hungerOverrides: Map<HungerBand, Map<CatAnimation, List<WeightedTransition>>> = mapOf(
+        HungerBand.LOW to mapOf(
+            CatAnimation.IDLE_VARIATION to listOf(
+                WeightedTransition(CatAnimation.IDLE_TO_WALK, 25),
+                WeightedTransition(CatAnimation.PLAY_ROLL, 20),
+                WeightedTransition(CatAnimation.CLEANING_LOOP, 10),
+                WeightedTransition(CatAnimation.IDLE_VARIATION, 45)
+            )
+        ),
+        HungerBand.HIGH to mapOf(
+            CatAnimation.IDLE_VARIATION to listOf(
+                WeightedTransition(CatAnimation.IDLE_TO_WALK, 15),
+                WeightedTransition(CatAnimation.CLEANING_LOOP, 40),
+                WeightedTransition(CatAnimation.WALK_TO_SLEEP, 10),
+                WeightedTransition(CatAnimation.IDLE_VARIATION, 20),
+                WeightedTransition(CatAnimation.PLAY_ROLL, 5),
+                WeightedTransition(CatAnimation.SIT_LICK_LONG, 10)
+            ),
+            CatAnimation.WALK_LOOP to listOf(
+                WeightedTransition(CatAnimation.WALK_TO_IDLE, 30),
+                WeightedTransition(CatAnimation.CLEANING_LOOP, 25),
+                WeightedTransition(CatAnimation.WALK_TO_SLEEP, 15),
+                WeightedTransition(CatAnimation.WALK_LOOP, 30)
+            )
+        ),
+        HungerBand.VERY_HIGH to mapOf(
+            CatAnimation.IDLE_VARIATION to listOf(
+                WeightedTransition(CatAnimation.WALK_TO_SLEEP, 50),
+                WeightedTransition(CatAnimation.CLEANING_LOOP, 20),
+                WeightedTransition(CatAnimation.IDLE_VARIATION, 15),
+                WeightedTransition(CatAnimation.IDLE_TO_WALK, 15)
+            ),
+            CatAnimation.WALK_LOOP to listOf(
+                WeightedTransition(CatAnimation.WALK_TO_SLEEP, 50),
+                WeightedTransition(CatAnimation.WALK_TO_IDLE, 30),
+                WeightedTransition(CatAnimation.WALK_LOOP, 20)
+            )
+        )
+    )
+
+    /** Pick next animation — hunger-aware */
+    fun pickNext(
+        current: CatAnimation,
+        canSleep: Boolean,
+        hungerBand: HungerBand = HungerBand.MEDIUM
+    ): CatAnimation {
+        // Check hunger overrides first, then default table
+        val options = hungerOverrides[hungerBand]?.get(current)
+            ?: weightedTransitions[current]
             ?: return autoTransitions[current] ?: CatAnimation.IDLE_VARIATION
 
         // Filter out sleep if cooldown active

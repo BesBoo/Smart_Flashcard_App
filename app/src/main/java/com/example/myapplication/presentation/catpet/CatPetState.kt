@@ -21,7 +21,25 @@ data class CatPetState(
     val isSleeping: Boolean = false,
 
     /** Monotonically increasing tick counter — used for walk bounce calculation */
-    val tickCount: Long = 0L
+    val tickCount: Long = 0L,
+
+    // ── Fish reward state ────────────────────────────
+    /** True when a fish icon should be displayed */
+    val showFish: Boolean = false,
+
+    /** Fish horizontal position normalized 0f..1f */
+    val fishPositionX: Float = 0.5f,
+
+    // ── Bubble message state ─────────────────────────
+    /** True when bubble message is visible above cat */
+    val showBubble: Boolean = false,
+
+    /** Text content of the bubble */
+    val bubbleText: String = "",
+
+    // ── Hunger ───────────────────────────────────────
+    /** Current hunger band for UI hints */
+    val hungerBand: HungerBand = HungerBand.MEDIUM
 ) {
     /** The actual sprite frame index (1-based) to render */
     val currentSpriteFrame: Int
