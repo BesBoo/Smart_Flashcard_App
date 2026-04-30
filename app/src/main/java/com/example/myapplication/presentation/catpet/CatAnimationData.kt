@@ -309,6 +309,7 @@ object TransitionMap {
             ?: weightedTransitions[current]
             ?: return autoTransitions[current] ?: CatAnimation.IDLE_VARIATION
 
+
         // Filter out sleep if cooldown active
         val filtered = if (!canSleep) {
             options.filter { it.animation != CatAnimation.WALK_TO_SLEEP }

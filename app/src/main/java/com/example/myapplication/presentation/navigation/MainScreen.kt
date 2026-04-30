@@ -110,11 +110,19 @@ fun MainScreen(
             )
 
             // Cat pet overlay — walks on top of the bottom navbar
+            // Disable tap during study/review to avoid blocking answer buttons
+            val currentRouteStr = currentRoute?.destination?.route ?: ""
+            val isOnStudyScreen = currentRouteStr.startsWith("study_session") ||
+                    currentRouteStr == "smart_review" ||
+                    currentRouteStr == "flashcard_quiz" ||
+                    currentRouteStr.startsWith("quiz")
+
             CatPetOverlay(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = innerPadding.calculateBottomPadding() * 0.80f),
-                controller = catController
+                controller = catController,
+                isTapEnabled = !isOnStudyScreen
             )
 
             // Floating Chat Bubble overlay (above all screens)

@@ -205,11 +205,21 @@ class CatPetController {
 
     /**
      * Tap interaction — triggers PLAY_ROLL with 3s cooldown.
+     * Skipped if cat is sleeping or eating.
      */
     fun tapPet() {
         val now = System.currentTimeMillis()
         if (now - lastTapTime < TAP_COOLDOWN_MS) return
+
+        val current = _state.value.currentAnimation
         if (_state.value.isSleeping) return
+
+        // Don't interrupt eat sequences
+        val blocked = setOf(
+            CatAnimation.CAT_MOVE_TO_FISH,
+            CatAnimation.EAT_FISH_SEQUENCE
+        )
+        if (current in blocked) return
 
         lastTapTime = now
         animationQueue.clear()

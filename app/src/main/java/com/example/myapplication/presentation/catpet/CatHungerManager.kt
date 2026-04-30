@@ -41,6 +41,7 @@ class CatHungerManager(context: Context) {
             prefs.edit().putInt(KEY_HUNGER, value.coerceIn(0, 100)).apply()
         }
 
+
     /** Number of fish rewards waiting to be consumed by animation */
     var pendingFish: Int
         get() = prefs.getInt(KEY_PENDING_FISH, 0)

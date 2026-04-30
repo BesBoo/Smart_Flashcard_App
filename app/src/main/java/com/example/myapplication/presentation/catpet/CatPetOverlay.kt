@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
+
 /**
  * ═══════════════════════════════════════════════════════════
  *  CAT PET OVERLAY
@@ -52,7 +53,8 @@ import kotlin.math.roundToInt
 @Composable
 fun CatPetOverlay(
     modifier: Modifier = Modifier,
-    controller: CatPetController = remember { CatPetController() }
+    controller: CatPetController = remember { CatPetController() },
+    isTapEnabled: Boolean = true
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -85,6 +87,7 @@ fun CatPetOverlay(
         val resId = res.getIdentifier("fish_small", "drawable", pkg)
         BitmapFactory.decodeResource(res, resId).asImageBitmap()
     }
+
 
     // ── Sync state from controller ───────────────────────
     fun syncState() {
@@ -198,14 +201,18 @@ fun CatPetOverlay(
                     .graphicsLayer {
                         scaleX = if (facingRight) -1f else 1f
                     }
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            controller.tapPet()
-                            val s = controller.state.value
-                            currentAnimation = s.currentAnimation
-                            frameIdx = s.currentFrameIdx
-                        }
-                    }
+                    .then(
+                        if (isTapEnabled) {
+                            Modifier.pointerInput(Unit) {
+                                detectTapGestures {
+                                    controller.tapPet()
+                                    val s = controller.state.value
+                                    currentAnimation = s.currentAnimation
+                                    frameIdx = s.currentFrameIdx
+                                }
+                            }
+                        } else Modifier // No touch handler → fully transparent to hits
+                    )
             )
 
             // ── Bubble message ───────────────────────────
