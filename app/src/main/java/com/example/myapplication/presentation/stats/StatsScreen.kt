@@ -55,6 +55,12 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 
 @Composable
 fun StatsScreen(
@@ -278,17 +284,35 @@ private fun PieLegendItem(label: String, count: Int, color: Color) {
 @Composable
 private fun CalendarHeatmap(dailyStats: List<DailyStats>) {
     val cs = MaterialTheme.colorScheme
-    val dateFormat = SimpleDateFormat("dd", Locale.getDefault())
 
-    val today = Calendar.getInstance()
-    val days = (27 downTo 0).map { daysAgo ->
-        val cal = today.clone() as Calendar
-        cal.add(Calendar.DAY_OF_YEAR, -daysAgo)
-        cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
+    // Track which month to display (default = current month)
+    var displayMonth by remember {
+        mutableIntStateOf(Calendar.getInstance().get(Calendar.MONTH))
+    }
+    var displayYear by remember {
+        mutableIntStateOf(Calendar.getInstance().get(Calendar.YEAR))
+    }
+
+    // Build a calendar for the displayed month
+    val calStart = Calendar.getInstance().apply {
+        set(Calendar.YEAR, displayYear)
+        set(Calendar.MONTH, displayMonth)
+        set(Calendar.DAY_OF_MONTH, 1)
+        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+    }
+    val daysInMonth = calStart.getActualMaximum(Calendar.DAY_OF_MONTH)
+    // Monday=0 ... Sunday=6  (ISO week start)
+    val firstDayOfWeek = ((calStart.get(Calendar.DAY_OF_WEEK) + 5) % 7)
+
+    // Build list of day timestamps for the month
+    val monthDays = (1..daysInMonth).map { day ->
+        val cal = calStart.clone() as Calendar
+        cal.set(Calendar.DAY_OF_MONTH, day)
         cal.timeInMillis
     }
 
+    // Map dailyStats by day-start timestamp
     val statsMap = dailyStats.associateBy { stat ->
         val cal = Calendar.getInstance().apply { timeInMillis = stat.date }
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)
@@ -298,38 +322,126 @@ private fun CalendarHeatmap(dailyStats: List<DailyStats>) {
 
     val maxReviewed = dailyStats.maxOfOrNull { it.cardsReviewed }?.coerceAtLeast(1) ?: 1
 
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        for (week in 0 until 4) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                for (day in 0 until 7) {
-                    val index = week * 7 + day
-                    if (index < days.size) {
-                        val dayMs = days[index]
-                        val stat = statsMap[dayMs]
-                        val intensity = if (stat != null) (stat.cardsReviewed.toFloat() / maxReviewed).coerceIn(0f, 1f) else 0f
+    // Today for highlighting
+    val todayCal = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+    }
+    val todayMs = todayCal.timeInMillis
 
-                        val bgColor = when {
-                            intensity == 0f -> cs.outlineVariant.copy(alpha = 0.15f)
-                            intensity < 0.25f -> QualityGood.copy(alpha = 0.2f)
-                            intensity < 0.5f -> QualityGood.copy(alpha = 0.4f)
-                            intensity < 0.75f -> QualityGood.copy(alpha = 0.65f)
-                            else -> QualityGood
-                        }
+    // Current month to limit forward navigation
+    val nowMonth = Calendar.getInstance().get(Calendar.MONTH)
+    val nowYear = Calendar.getInstance().get(Calendar.YEAR)
 
-                        Box(
-                            modifier = Modifier.weight(1f).aspectRatio(1f)
-                                .clip(RoundedCornerShape(4.dp)).background(bgColor),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = dateFormat.format(Date(dayMs)),
-                                fontSize = 9.sp,
-                                color = if (intensity > 0.5f) Color.White else cs.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
+    // Month name
+    val monthName = SimpleDateFormat("MMMM yyyy", Locale("vi")).format(calStart.time)
+        .replaceFirstChar { it.uppercaseChar() }
+
+    Column {
+        // ── Month header with prev/next ──
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.IconButton(onClick = {
+                if (displayMonth == 0) {
+                    displayMonth = 11; displayYear--
+                } else displayMonth--
+            }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "Tháng trước",
+                    tint = cs.onSurfaceVariant
+                )
+            }
+            Text(
+                text = monthName,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                color = cs.onSurface
+            )
+            androidx.compose.material3.IconButton(
+                onClick = {
+                    if (displayMonth == 11) {
+                        displayMonth = 0; displayYear++
+                    } else displayMonth++
+                },
+                enabled = !(displayYear == nowYear && displayMonth >= nowMonth)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "Tháng sau",
+                    tint = if (displayYear == nowYear && displayMonth >= nowMonth)
+                        cs.outlineVariant else cs.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        // ── Day-of-week headers (Mon..Sun) ──
+        val dayHeaders = listOf("T2", "T3", "T4", "T5", "T6", "T7", "CN")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            dayHeaders.forEach { label ->
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Text(label, fontSize = 10.sp, color = cs.onSurfaceVariant, fontWeight = FontWeight.Medium)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        // ── Calendar grid ──
+        val totalCells = firstDayOfWeek + daysInMonth
+        val totalWeeks = (totalCells + 6) / 7
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            for (week in 0 until totalWeeks) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    for (dow in 0 until 7) {
+                        val cellIndex = week * 7 + dow
+                        val dayIndex = cellIndex - firstDayOfWeek // 0-based day of month
+
+                        if (dayIndex in 0 until daysInMonth) {
+                            val dayMs = monthDays[dayIndex]
+                            val stat = statsMap[dayMs]
+                            val intensity = if (stat != null)
+                                (stat.cardsReviewed.toFloat() / maxReviewed).coerceIn(0f, 1f) else 0f
+                            val isToday = dayMs == todayMs
+
+                            val bgColor = when {
+                                intensity == 0f -> cs.outlineVariant.copy(alpha = 0.15f)
+                                intensity < 0.25f -> QualityGood.copy(alpha = 0.2f)
+                                intensity < 0.5f -> QualityGood.copy(alpha = 0.4f)
+                                intensity < 0.75f -> QualityGood.copy(alpha = 0.65f)
+                                else -> QualityGood
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(bgColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${dayIndex + 1}",
+                                    fontSize = 9.sp,
+                                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                                    color = when {
+                                        intensity > 0.5f -> Color.White
+                                        isToday -> cs.primary
+                                        else -> cs.onSurfaceVariant
+                                    },
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
+                            // Empty cell (before day 1 or after last day)
+                            Spacer(Modifier.weight(1f).aspectRatio(1f))
                         }
-                    } else {
-                        Spacer(Modifier.weight(1f))
                     }
                 }
             }
