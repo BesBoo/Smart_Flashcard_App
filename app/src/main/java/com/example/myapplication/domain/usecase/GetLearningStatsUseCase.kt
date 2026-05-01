@@ -17,9 +17,9 @@ class GetLearningStatsUseCase @Inject constructor(
         // Get ALL cards for the user to compute mastery breakdown
         val allCards = flashcardRepository.getAllCardsByUser(userId)
 
-        // Get recent review logs for daily stats (last 7 days)
-        val sevenDaysAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
-        val recentLogs = reviewLogRepository.getReviewLogsByDateRange(userId, sevenDaysAgo, System.currentTimeMillis())
+        // Get recent review logs for daily stats (last 28 days — matches activity calendar)
+        val twentyEightDaysAgo = System.currentTimeMillis() - 28L * 24 * 60 * 60 * 1000
+        val recentLogs = reviewLogRepository.getReviewLogsByDateRange(userId, twentyEightDaysAgo, System.currentTimeMillis())
 
         // Build daily stats from review logs
         val dailyStats = recentLogs
