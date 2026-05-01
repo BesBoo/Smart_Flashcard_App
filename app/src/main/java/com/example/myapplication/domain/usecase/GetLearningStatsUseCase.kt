@@ -48,11 +48,23 @@ class GetLearningStatsUseCase @Inject constructor(
         } else 0f
 
         // Calculate streak (consecutive days with reviews, counting back from today)
+        // Use a wider window (up to 365 days) so streak is not capped by the 7-day daily stats
         val today = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
         }
-        val reviewDays = dailyStats.map { it.date }.toSet()
+        val streakWindowStart = System.currentTimeMillis() - 365L * 24 * 60 * 60 * 1000
+        val allReviewLogs = reviewLogRepository.getReviewLogsByDateRange(userId, streakWindowStart, System.currentTimeMillis())
+        val reviewDays = allReviewLogs
+            .map { log ->
+                val cal = Calendar.getInstance().apply { timeInMillis = log.reviewedAt }
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                cal.timeInMillis
+            }
+            .toSet()
         var currentStreak = 0
         val checkDay = today.clone() as Calendar
         while (reviewDays.contains(checkDay.timeInMillis)) {
