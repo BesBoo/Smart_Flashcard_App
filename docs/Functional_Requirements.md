@@ -137,14 +137,13 @@
 | AI-06 | Người dùng có thể yêu cầu AI tạo câu ví dụ cho một thẻ cụ thể. |
 | AI-07 | Người dùng có thể yêu cầu AI tạo hình ảnh minh họa cho một thẻ cụ thể (sử dụng Gemini image model). |
 | AI-08 | Người dùng có thể phát audio TTS cho thẻ (sử dụng Google Translate TTS). |
-| AI-09 | Người dùng có thể mở AI Tutor chat và đặt câu hỏi bằng tiếng Việt hoặc tiếng Anh. |
-| AI-10 | AI Tutor phản hồi theo phong cách thân thiện, dễ hiểu, sử dụng ví dụ và phép so sánh. |
-| AI-11 | AI Tutor duy trì lịch sử hội thoại trong phiên chat. |
-| AI-12 | Hệ thống tạo câu hỏi trắc nghiệm từ thẻ ghi nhớ cho chế độ Quiz (1 đáp án đúng + 3 đáp án nhiễu). |
+| AI-09 | Người dùng có thể mở Memo và đặt câu hỏi bằng tiếng Việt hoặc tiếng Anh. |
+| AI-10 | Memo Chat phản hồi theo phong cách thân thiện, dễ hiểu, sử dụng ví dụ và phép so sánh. |
+| AI-11 | Memo Chat duy trì lịch sử hội thoại trong phiên chat. |
+| AI-12 | Trong quá trình trò chuyện với Memo Chat, nếu phát hiện từ vựng mới thì hệ thống sẽ đề xuất và người dùng có thể lưu về trong quá trình chat |
 | AI-13 | Hệ thống theo dõi số lần sử dụng AI mỗi ngày cho từng người dùng. |
-| AI-14 | Hệ thống giới hạn sử dụng AI hàng ngày cho người dùng miễn phí. |
-| AI-15 | Hệ thống hiển thị số lần AI còn lại cho người dùng. |
-| AI-16 | Khi thẻ bị sai ≥ 3 lần, hệ thống đề xuất AI hỗ trợ (giải thích đơn giản hơn, thêm ví dụ). |
+| AI-14 | Hệ thống tạo câu hỏi trắc nghiệm từ thẻ ghi nhớ cho chế độ Quiz (1 đáp án đúng + 3 đáp án nhiễu). |
+| AI-15 | Khi thẻ bị sai ≥ 3 lần, hệ thống đề xuất AI hỗ trợ (giải thích đơn giản hơn, thêm ví dụ). |
 
 **Hướng dẫn test trên Android:**
 
@@ -332,7 +331,7 @@
 | UTIL-05 | Smart Review yêu cầu tối thiểu 3 thẻ hợp lệ, hiển thị tiến độ theo từng câu và trang kết quả cuối phiên. |
 | UTIL-06 | Flashcard Quiz cho phép chọn deck và số câu 5-20; câu hỏi trắc nghiệm được tạo cục bộ từ dữ liệu thẻ hiện có. |
 | UTIL-07 | Flashcard Quiz yêu cầu tối thiểu 4 thẻ để tạo đáp án nhiễu và hiển thị điểm số cuối phiên. |
-| UTIL-08 | Memo Chat (AI Chat) hỗ trợ trò chuyện nhiều lượt, hiển thị trạng thái đang trả lời và giữ ngữ cảnh hội thoại trong phiên chat. |
+| UTIL-08 | Memo Chat hỗ trợ trò chuyện nhiều lượt, hiển thị trạng thái đang trả lời và giữ ngữ cảnh hội thoại trong phiên chat. |
 | UTIL-09 | Khi AI trả về danh sách từ vựng gợi ý, người dùng có thể lưu từng từ trực tiếp thành flashcard vào deck đã chọn. |
 | UTIL-10 | Bong bóng chat nổi có thể bật/tắt, kéo thả và tự hút về cạnh màn hình; chạm vào bong bóng để mở overlay chat. |
 
