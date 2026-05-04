@@ -137,12 +137,58 @@ class StudySessionViewModel @Inject constructor(
         val isCorrect = quality.value >= 3
         val isDifficult = quality.value <= 2
 
+        // ── OPTIMISTIC: Advance UI immediately ──
+        val newCorrect = currentState.correctCount + if (isCorrect) 1 else 0
+        val newIncorrect = currentState.incorrectCount + if (!isCorrect) 1 else 0
+        val updatedDifficult = if (isDifficult) {
+            currentState.difficultCards + card
+        } else {
+            currentState.difficultCards
+        }
+        val nextIndex = currentState.currentIndex + 1
+
+        if (nextIndex >= currentState.cards.size) {
+            val totalTime = System.currentTimeMillis() - currentState.startTimeMs
+            val avgTime = if (currentState.cards.isNotEmpty()) totalTime / currentState.cards.size else 0L
+
+            _uiState.update {
+                it.copy(
+                    isSessionComplete = true,
+                    correctCount = newCorrect,
+                    incorrectCount = newIncorrect,
+                    difficultCards = updatedDifficult,
+                    summary = StudySessionSummary(
+                        totalCards = currentState.cards.size,
+                        correctCount = newCorrect,
+                        incorrectCount = newIncorrect,
+                        averageResponseTimeMs = avgTime,
+                        totalTimeMs = totalTime,
+                        newCardsStudied = currentState.cards.count { c -> c.isNew },
+                        reviewCardsStudied = currentState.cards.count { c -> !c.isNew }
+                    )
+                )
+            }
+
+            // Pet motivation: reward fish based on cards studied
+            hungerManager.onSessionComplete(currentState.cards.size)
+        } else {
+            _uiState.update {
+                it.copy(
+                    currentIndex = nextIndex,
+                    isFlipped = false,
+                    correctCount = newCorrect,
+                    incorrectCount = newIncorrect,
+                    difficultCards = updatedDifficult,
+                    cardStartTimeMs = System.currentTimeMillis()
+                )
+            }
+        }
+
+        // ── BACKGROUND: Process SM-2 + sync to server (non-blocking) ──
         viewModelScope.launch {
             try {
-                // Process review through SM-2 engine
                 val adaptiveResult = reviewCardUseCase(card, quality, responseTime)
 
-                // AI-16: Check if card is struggling → show AI hint dialog
                 if (adaptiveResult.shouldTriggerAiHint) {
                     _uiState.update {
                         it.copy(
@@ -157,55 +203,7 @@ class StudySessionViewModel @Inject constructor(
                 // Log but don't block the session
             }
 
-            // Pet motivation: reduce hunger per card reviewed
             hungerManager.onCardReviewed()
-
-            val newCorrect = currentState.correctCount + if (isCorrect) 1 else 0
-            val newIncorrect = currentState.incorrectCount + if (!isCorrect) 1 else 0
-            val updatedDifficult = if (isDifficult) {
-                currentState.difficultCards + card
-            } else {
-                currentState.difficultCards
-            }
-            val nextIndex = currentState.currentIndex + 1
-
-            if (nextIndex >= currentState.cards.size) {
-                val totalTime = System.currentTimeMillis() - currentState.startTimeMs
-                val avgTime = if (currentState.cards.isNotEmpty()) totalTime / currentState.cards.size else 0L
-
-                _uiState.update {
-                    it.copy(
-                        isSessionComplete = true,
-                        correctCount = newCorrect,
-                        incorrectCount = newIncorrect,
-                        difficultCards = updatedDifficult,
-                        summary = StudySessionSummary(
-                            totalCards = currentState.cards.size,
-                            correctCount = newCorrect,
-                            incorrectCount = newIncorrect,
-                            averageResponseTimeMs = avgTime,
-                            totalTimeMs = totalTime,
-                            newCardsStudied = currentState.cards.count { c -> c.isNew },
-                            reviewCardsStudied = currentState.cards.count { c -> !c.isNew }
-                        )
-                    )
-                }
-
-                // Pet motivation: reward fish based on cards studied
-                val totalCards = currentState.cards.size
-                hungerManager.onSessionComplete(totalCards)
-            } else {
-                _uiState.update {
-                    it.copy(
-                        currentIndex = nextIndex,
-                        isFlipped = false,
-                        correctCount = newCorrect,
-                        incorrectCount = newIncorrect,
-                        difficultCards = updatedDifficult,
-                        cardStartTimeMs = System.currentTimeMillis()
-                    )
-                }
-            }
         }
     }
 

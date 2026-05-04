@@ -100,6 +100,7 @@ class FlashcardRepositoryImpl @Inject constructor(
         cardId: String, repetition: Int, intervalDays: Int,
         easeFactor: Double, nextReviewDate: Long, quality: Int
     ) {
+        // 1. Save to local DB immediately (instant, no network)
         flashcardDao.updateSm2Fields(
             cardId = cardId,
             repetition = repetition,
@@ -108,7 +109,7 @@ class FlashcardRepositoryImpl @Inject constructor(
             nextReviewDate = nextReviewDate,
             quality = quality
         )
-        // Sync SM2 progress to server so it persists across logout/login
+        // 2. Sync to server in best-effort (may be slow due to cold start)
         try {
             val card = flashcardDao.getFlashcardById(cardId)
             if (card != null) {
@@ -130,7 +131,7 @@ class FlashcardRepositoryImpl @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e("FlashcardRepo", "SM2 sync to server FAILED for card=$cardId: ${e.message}", e)
+            android.util.Log.w("FlashcardRepo", "SM2 sync to server deferred for card=$cardId: ${e.message}")
         }
     }
 
