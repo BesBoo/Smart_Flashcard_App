@@ -15,6 +15,12 @@
 | **Cloud Sync** | Đồng bộ dữ liệu offline-first giữa thiết bị và server |
 | **Statistics** | Thống kê học tập, biểu đồ tiến độ |
 | **Admin** | Quản trị hệ thống (dành cho quản trị viên) |
+| **Utilities Hub** | Trung tâm tiện ích học tập: Smart Review, Flashcard Quiz, Memo Chat |
+| **Pet Companion** | Thú cưng ảo đồng hành học tập, cơ chế đói/no và thưởng cá theo tiến độ |
+| **Account Recovery & SSO** | Quên mật khẩu bằng OTP email, đăng nhập Google, cập nhật email |
+| **Reminder & Study Settings** | Cài đặt giới hạn học/ngày, nhắc học hằng ngày, quyền thông báo |
+| **External Import & Sheet Sync** | Nhập thẻ từ file Excel, liên kết và đồng bộ Google Sheet |
+| **Content Moderation** | Báo cáo nội dung, xử lý vi phạm và thông báo vi phạm cho chủ bộ thẻ |
 
 
 ## 2. Yêu cầu chức năng
@@ -131,14 +137,13 @@
 | AI-06 | Người dùng có thể yêu cầu AI tạo câu ví dụ cho một thẻ cụ thể. |
 | AI-07 | Người dùng có thể yêu cầu AI tạo hình ảnh minh họa cho một thẻ cụ thể (sử dụng Gemini image model). |
 | AI-08 | Người dùng có thể phát audio TTS cho thẻ (sử dụng Google Translate TTS). |
-| AI-09 | Người dùng có thể mở AI Tutor chat và đặt câu hỏi bằng tiếng Việt hoặc tiếng Anh. |
-| AI-10 | AI Tutor phản hồi theo phong cách thân thiện, dễ hiểu, sử dụng ví dụ và phép so sánh. |
-| AI-11 | AI Tutor duy trì lịch sử hội thoại trong phiên chat. |
-| AI-12 | Hệ thống tạo câu hỏi trắc nghiệm từ thẻ ghi nhớ cho chế độ Quiz (1 đáp án đúng + 3 đáp án nhiễu). |
+| AI-09 | Người dùng có thể mở Memo và đặt câu hỏi bằng tiếng Việt hoặc tiếng Anh. |
+| AI-10 | Memo Chat phản hồi theo phong cách thân thiện, dễ hiểu, sử dụng ví dụ và phép so sánh. |
+| AI-11 | Memo Chat duy trì lịch sử hội thoại trong phiên chat. |
+| AI-12 | Trong quá trình trò chuyện với Memo Chat, nếu phát hiện từ vựng mới thì hệ thống sẽ đề xuất và người dùng có thể lưu về trong quá trình chat |
 | AI-13 | Hệ thống theo dõi số lần sử dụng AI mỗi ngày cho từng người dùng. |
-| AI-14 | Hệ thống giới hạn sử dụng AI hàng ngày cho người dùng miễn phí. |
-| AI-15 | Hệ thống hiển thị số lần AI còn lại cho người dùng. |
-| AI-16 | Khi thẻ bị sai ≥ 3 lần, hệ thống đề xuất AI hỗ trợ (giải thích đơn giản hơn, thêm ví dụ). |
+| AI-14 | Hệ thống tạo câu hỏi trắc nghiệm từ thẻ ghi nhớ cho chế độ Quiz (1 đáp án đúng + 3 đáp án nhiễu). |
+| AI-15 | Khi thẻ bị sai ≥ 3 lần, hệ thống đề xuất AI hỗ trợ (giải thích đơn giản hơn, thêm ví dụ). |
 
 **Hướng dẫn test trên Android:**
 
@@ -315,6 +320,146 @@
 
 ---
 
+### 2.12 Tiện ích học tập (UTIL)
+
+| Mã | Yêu cầu |
+|---|---|
+| UTIL-01 | Ứng dụng có tab **Tiện ích** trong thanh điều hướng chính để gom các công cụ hỗ trợ học tập. |
+| UTIL-02 | Màn hình Utilities Hub hiển thị tổng quan nhanh gồm: số thẻ đến hạn hôm nay, tổng số thẻ và streak hiện tại. |
+| UTIL-03 | Smart Review cho phép chọn một hoặc nhiều deck (hoặc chọn tất cả deck) để tạo bộ câu hỏi ôn tập. |
+| UTIL-04 | Smart Review cho phép cấu hình số câu hỏi trong khoảng 5-20 câu và dùng AI tạo câu hỏi dạng điền từ/biến thể ngữ cảnh. |
+| UTIL-05 | Smart Review yêu cầu tối thiểu 3 thẻ hợp lệ, hiển thị tiến độ theo từng câu và trang kết quả cuối phiên. |
+| UTIL-06 | Flashcard Quiz cho phép chọn deck và số câu 5-20; câu hỏi trắc nghiệm được tạo cục bộ từ dữ liệu thẻ hiện có. |
+| UTIL-07 | Flashcard Quiz yêu cầu tối thiểu 4 thẻ để tạo đáp án nhiễu và hiển thị điểm số cuối phiên. |
+| UTIL-08 | Memo Chat hỗ trợ trò chuyện nhiều lượt, hiển thị trạng thái đang trả lời và giữ ngữ cảnh hội thoại trong phiên chat. |
+| UTIL-09 | Khi AI trả về danh sách từ vựng gợi ý, người dùng có thể lưu từng từ trực tiếp thành flashcard vào deck đã chọn. |
+| UTIL-10 | Bong bóng chat nổi có thể bật/tắt, kéo thả và tự hút về cạnh màn hình; chạm vào bong bóng để mở overlay chat. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Mở Utilities Hub | Tab **Tiện ích** -> Kiểm tra hiển thị 3 tool chính: Smart Review, Memo Chat, Flashcard Quiz |
+| Smart Review | Tab **Tiện ích** -> Chọn **Smart Review** -> Chọn deck + số câu -> **Bắt đầu** -> Trả lời đến hết -> Kiểm tra màn hình kết quả |
+| Flashcard Quiz | Tab **Tiện ích** -> Chọn **Flashcard Quiz** -> Chọn deck + số câu -> **Bắt đầu** -> Trả lời -> Kiểm tra điểm cuối phiên |
+| Memo Chat + lưu từ | Tab **Tiện ích** -> Chọn **Memo Chat** -> Gửi câu hỏi -> Chọn icon lưu ở 1 từ gợi ý -> Chọn deck -> Kiểm tra thẻ được tạo |
+| Bong bóng chat nổi | Tab **Cài đặt** -> Bật **Bong bóng chat** -> Quay về tab chính -> Kéo bong bóng, thả -> Chạm bong bóng -> Kiểm tra chat overlay mở |
+
+### 2.13 Thú cưng ảo & động lực học tập (PET)
+
+| Mã | Yêu cầu |
+|---|---|
+| PET-01 | Hệ thống hiển thị thú cưng ảo dạng overlay trên các màn hình tab chính, phía trên thanh điều hướng dưới. |
+| PET-02 | Thú cưng hoạt động theo state machine animation (idle, đi bộ, chơi, ngủ, thức dậy, ăn cá, ăn mừng). |
+| PET-03 | Trạng thái đói được lưu cục bộ (SharedPreferences), giá trị trong khoảng 0-100. |
+| PET-04 | Mức đói tăng theo thời gian: +3 điểm mỗi 3 giờ không học (tối đa 100). |
+| PET-05 | Mỗi thẻ được trả lời trong phiên học làm giảm đói 5 điểm; cứ mỗi 5 thẻ sẽ tích lũy 1 phần thưởng cá. |
+| PET-06 | Khi quay lại tab chính, cá thưởng tồn đọng được tiêu thụ và phát animation mèo đi tới ăn cá (nhiều cá có thể kèm animation ăn mừng). |
+| PET-07 | Hệ thống có bong bóng nhắc học theo ngữ cảnh (đói/đến hạn), có cooldown để tránh hiển thị quá dày. |
+| PET-08 | Chạm vào thú cưng kích hoạt animation tương tác với cơ chế cooldown; thao tác chạm bị vô hiệu trên các màn hình làm bài để tránh che nút trả lời. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Hiển thị pet overlay | Đăng nhập -> Vào tab **Trang chủ**/**Bộ thẻ** -> Kiểm tra pet xuất hiện phía trên bottom bar |
+| Giảm đói khi học | Bắt đầu phiên học -> Trả lời nhiều thẻ -> Quay về tab chính -> Kiểm tra mèo nhận cá thưởng/animation ăn cá |
+| Bubble nhắc học | Để app nghỉ một thời gian hoặc còn nhiều thẻ đến hạn -> Mở lại tab chính -> Kiểm tra bubble gợi ý học |
+| Tương tác chạm pet | Ở tab chính chạm vào pet -> Kiểm tra animation phản hồi; vào màn học -> kiểm tra chạm pet không cản thao tác trả lời |
+
+### 2.14 Khôi phục tài khoản, SSO & cập nhật email (ACCOUNT)
+
+| Mã | Yêu cầu |
+|---|---|
+| ACCOUNT-01 | Người dùng có thể gửi yêu cầu quên mật khẩu bằng email và nhận OTP qua email. |
+| ACCOUNT-02 | OTP đặt lại mật khẩu có 6 chữ số, thời hạn ngắn (server quản lý hết hạn và chỉ dùng một lần). |
+| ACCOUNT-03 | Người dùng có thể đặt lại mật khẩu bằng email + OTP + mật khẩu mới. |
+| ACCOUNT-04 | Ứng dụng hỗ trợ đăng nhập Google bằng ID Token; nếu email chưa tồn tại thì tự tạo tài khoản mới. |
+| ACCOUNT-05 | Người dùng đã đăng nhập có thể cập nhật email tài khoản; hệ thống kiểm tra email mới không trùng với tài khoản khác. |
+| ACCOUNT-06 | Sau khi cập nhật email thành công, ứng dụng buộc đăng xuất và yêu cầu đăng nhập lại bằng thông tin mới. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Quên mật khẩu thành công | Màn đăng nhập -> **Quên mật khẩu** -> Nhập email -> **Gửi OTP** -> Nhập OTP + mật khẩu mới -> Xác nhận thành công |
+| OTP sai/hết hạn | Thực hiện quên mật khẩu -> Nhập OTP sai hoặc OTP cũ -> Kiểm tra hiển thị lỗi hợp lệ |
+| Đăng nhập Google | Màn đăng nhập -> **Đăng nhập Google** -> Chọn tài khoản Google -> Kiểm tra vào app thành công |
+| Cập nhật email | Tab **Cài đặt** -> **Thay đổi email** -> Nhập email mới -> Lưu -> Kiểm tra app tự đăng xuất và quay về màn đăng nhập |
+
+### 2.15 Cài đặt học tập & nhắc học hằng ngày (SET)
+
+| Mã | Yêu cầu |
+|---|---|
+| SET-01 | Người dùng có thể cấu hình giới hạn **thẻ mới/ngày** trong khoảng 5-1000. |
+| SET-02 | Người dùng có thể cấu hình giới hạn **thẻ ôn tập/ngày** trong khoảng 10-5000. |
+| SET-03 | Ứng dụng hỗ trợ bật/tắt chế độ giao diện tối từ màn hình cài đặt. |
+| SET-04 | Người dùng có thể bật/tắt bong bóng chat nổi toàn ứng dụng. |
+| SET-05 | Người dùng có thể bật/tắt nhắc học hằng ngày và chọn giờ nhắc cụ thể (giờ, phút). |
+| SET-06 | Trên Android 13+, khi bật nhắc học hệ thống phải yêu cầu quyền thông báo (`POST_NOTIFICATIONS`) nếu chưa cấp. |
+| SET-07 | Nhắc học được lên lịch bằng AlarmManager tại thời điểm chính xác khi có thể, và có cơ chế fallback khi thiết bị không cho exact alarm. |
+| SET-08 | Sau khi hiển thị thông báo, hệ thống tự lên lịch lại cho ngày hôm sau. |
+| SET-09 | Sau khi thiết bị khởi động lại, nếu nhắc học đang bật thì hệ thống tự khôi phục lịch nhắc. |
+| SET-10 | Màn hình Home hiển thị trạng thái đồng bộ nền và cho phép người dùng bấm đồng bộ thủ công. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Đổi hạn mức học/ngày | Tab **Cài đặt** -> Kéo slider thẻ mới/thẻ ôn -> Mở phiên học -> Kiểm tra số lượng thẻ lấy theo cấu hình mới |
+| Bật nhắc học | Tab **Cài đặt** -> Bật **Nhắc nhở ôn tập** -> Chọn giờ -> Chờ đến giờ -> Kiểm tra notification xuất hiện |
+| Tắt nhắc học | Tab **Cài đặt** -> Tắt **Nhắc nhở ôn tập** -> Kiểm tra không còn thông báo ở các chu kỳ tiếp theo |
+| Khôi phục sau reboot | Bật nhắc học -> Khởi động lại thiết bị -> Chờ khung giờ nhắc -> Kiểm tra thông báo vẫn hoạt động |
+| Đồng bộ thủ công | Tab **Trang chủ** -> Bấm nút đồng bộ -> Kiểm tra trạng thái đổi từ đang đồng bộ sang thành công/thất bại |
+
+### 2.16 Nhập liệu ngoài hệ thống & đồng bộ Google Sheet (IMPORT)
+
+| Mã | Yêu cầu |
+|---|---|
+| IMPORT-01 | Người dùng có thể nhập flashcard từ file Excel (`.xlsx`/`.xls`) trong màn chi tiết deck. |
+| IMPORT-02 | File Excel được đọc theo cấu trúc: cột A = mặt trước, cột B = mặt sau, cột C = ví dụ (tùy chọn). |
+| IMPORT-03 | Các dòng trống (A và B cùng rỗng) được bỏ qua; hệ thống hiển thị kết quả nhập (đã thêm / tổng dòng / dòng bỏ qua). |
+| IMPORT-04 | Chủ deck có thể liên kết một URL Google Sheet với deck để dùng làm nguồn dữ liệu đồng bộ. |
+| IMPORT-05 | Chủ deck có thể hủy liên kết Google Sheet bất kỳ lúc nào. |
+| IMPORT-06 | Khi đồng bộ Google Sheet, hệ thống tải CSV từ sheet public, thêm thẻ mới và bỏ qua bản ghi trùng chính xác (front+back). |
+| IMPORT-07 | Hệ thống trả về thống kê đồng bộ (added, skipped, totalRows) và cập nhật lại danh sách thẻ trong deck sau khi sync. |
+| IMPORT-08 | Nếu Google Sheet chưa publish/public hoặc không truy cập được, hệ thống trả thông báo lỗi rõ ràng để người dùng xử lý. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Nhập Excel | Vào 1 deck -> **Nhập từ file Excel** -> Chọn file đúng định dạng -> Kiểm tra số thẻ được thêm và thông báo kết quả |
+| Liên kết Google Sheet | Vào 1 deck -> **Liên kết Google Sheet** -> Dán link -> **Liên kết** -> Kiểm tra trạng thái đã liên kết |
+| Đồng bộ Google Sheet | Deck đã liên kết -> Bấm **Đồng bộ** -> Kiểm tra số thẻ thêm mới/bỏ qua hiển thị đúng |
+| Hủy liên kết | Deck đã liên kết -> Bấm **Hủy liên kết** -> Kiểm tra nút quay về trạng thái chưa liên kết |
+| Lỗi sheet private | Liên kết/sync với sheet chưa public -> Kiểm tra thông báo yêu cầu publish/public sheet |
+
+### 2.17 Chia sẻ nâng cao & kiểm duyệt nội dung (MOD)
+
+| Mã | Yêu cầu |
+|---|---|
+| MOD-01 | Hệ thống tạo mã chia sẻ ngắn cho deck và đảm bảo tính duy nhất của mã. |
+| MOD-02 | Chủ deck có thể đặt quyền mặc định cho người tham gia: `read` hoặc `edit`. |
+| MOD-03 | Người dùng có thể xem preview deck theo mã chia sẻ (tên deck, chủ sở hữu, số thẻ) trước khi tham gia. |
+| MOD-04 | Người dùng có thể tham gia/rời deck chia sẻ; hệ thống lưu trạng thái subscription và quyền truy cập tương ứng. |
+| MOD-05 | Chủ deck có thể xem danh sách subscriber, đổi quyền từng subscriber, hoặc kick subscriber khỏi deck. |
+| MOD-06 | Subscriber quyền `read` chỉ được xem/học; subscriber quyền `edit` được phép thêm/sửa/xóa thẻ trong deck chia sẻ. |
+| MOD-07 | Người dùng (không phải chủ deck) có thể gửi báo cáo vi phạm nội dung trực tiếp từ màn hình deck được chia sẻ. |
+| MOD-08 | Admin có thể duyệt báo cáo với 2 hành động `approve`/`reject`; khi `approve`, nội dung vi phạm bị ẩn/xóa mềm khỏi hệ thống. |
+| MOD-09 | Chủ sở hữu nội dung vi phạm nhận thông báo vi phạm trong app và có thể xác nhận đã đọc để không hiển thị lặp lại. |
+
+**Hướng dẫn test trên Android:**
+
+| Test | Các bước thao tác |
+|---|---|
+| Tạo mã và tham gia deck | **User A**: mở deck -> chia sẻ -> lấy mã. **User B**: vào **Nhập mã chia sẻ** -> xem preview -> tham gia -> kiểm tra deck xuất hiện |
+| Quản lý subscriber | **User A**: mở dialog chia sẻ -> đổi quyền 1 subscriber read/edit -> kiểm tra quyền thực thi ở tài khoản subscriber |
+| Read vs Edit permission | **User B (read)**: mở deck chia sẻ -> thử thêm/sửa/xóa thẻ (phải bị chặn). **User C (edit)**: thao tác tương tự (được phép) |
+| Rời/kick khỏi deck | **Subscriber**: rời deck -> deck biến mất khỏi thư viện. **Owner**: kick subscriber -> subscriber mất quyền truy cập |
+| Báo cáo và thông báo vi phạm | **Subscriber**: báo cáo deck -> **Admin** duyệt approve -> **Owner** đăng nhập lại -> nhận dialog thông báo vi phạm |
+
+
 ## 3. Ma trận tính năng Free / Premium
 
 | Tính năng | Gói miễn phí | Gói Premium (Tương lai) |
@@ -339,4 +484,3 @@
 > **Lưu ý**: Giới hạn AI được reset hàng ngày vào lúc nửa đêm (giờ địa phương). Lượt chưa dùng không được cộng dồn.
 
 ---
-
