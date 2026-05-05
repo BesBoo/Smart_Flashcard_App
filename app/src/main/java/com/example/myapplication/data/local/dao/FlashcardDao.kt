@@ -25,6 +25,7 @@ interface FlashcardDao {
     @Query("""
         UPDATE flashcards SET 
             frontText = :frontText, backText = :backText, exampleText = :exampleText,
+            pronunciationIpa = :pronunciationIpa,
             imageUrl = :imageUrl, audioUrl = :audioUrl,
             repetition = :repetition, intervalDays = :intervalDays, easeFactor = :easeFactor,
             nextReviewDate = :nextReviewDate, failCount = :failCount, totalReviews = :totalReviews,
@@ -33,6 +34,7 @@ interface FlashcardDao {
     """)
     suspend fun updateCardFields(
         id: String, frontText: String, backText: String, exampleText: String?,
+        pronunciationIpa: String?,
         imageUrl: String?, audioUrl: String?,
         repetition: Int, intervalDays: Int, easeFactor: Double,
         nextReviewDate: Long, failCount: Int, totalReviews: Int,
@@ -44,6 +46,7 @@ interface FlashcardDao {
         UPDATE flashcards SET 
             userId = :userId,
             frontText = :frontText, backText = :backText, exampleText = :exampleText,
+            pronunciationIpa = :pronunciationIpa,
             imageUrl = :imageUrl, audioUrl = :audioUrl,
             repetition = :repetition, intervalDays = :intervalDays, easeFactor = :easeFactor,
             nextReviewDate = :nextReviewDate, failCount = :failCount, totalReviews = :totalReviews,
@@ -52,6 +55,7 @@ interface FlashcardDao {
     """)
     suspend fun updateCardFieldsFull(
         id: String, userId: String, frontText: String, backText: String, exampleText: String?,
+        pronunciationIpa: String?,
         imageUrl: String?, audioUrl: String?,
         repetition: Int, intervalDays: Int, easeFactor: Double,
         nextReviewDate: Long, failCount: Int, totalReviews: Int,

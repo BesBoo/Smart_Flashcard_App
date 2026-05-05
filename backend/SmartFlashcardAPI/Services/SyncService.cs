@@ -160,6 +160,7 @@ public class SyncService
                     FrontText = data.FrontText ?? "",
                     BackText = data.BackText ?? "",
                     ExampleText = data.ExampleText,
+                    PronunciationIpa = data.PronunciationIpa,
                     ImageUrl = data.ImageUrl,
                     AudioUrl = data.AudioUrl,
                     Repetition = data.Repetition,
@@ -190,6 +191,7 @@ public class SyncService
                     existing.FrontText = data.FrontText ?? existing.FrontText;
                     existing.BackText = data.BackText ?? existing.BackText;
                     existing.ExampleText = data.ExampleText;
+                    existing.PronunciationIpa = data.PronunciationIpa;
                     existing.ImageUrl = data.ImageUrl;
                     existing.AudioUrl = data.AudioUrl;
                     existing.Repetition = data.Repetition;
@@ -249,6 +251,7 @@ public class SyncService
 
     private record FlashcardSyncData(
         Guid DeckId, string? FrontText, string? BackText, string? ExampleText,
+        string? PronunciationIpa,
         string? ImageUrl, string? AudioUrl,
         int Repetition, int IntervalDays, double EaseFactor,
         DateTime NextReviewDate, int FailCount, int TotalReviews

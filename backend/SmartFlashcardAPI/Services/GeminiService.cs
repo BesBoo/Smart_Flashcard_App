@@ -270,6 +270,33 @@ IMPORTANT RULES:
     }
 
     // ══════════════════════════════════════════════════════════
+    //  GENERATE IPA PRONUNCIATION
+    // ══════════════════════════════════════════════════════════
+
+    public async Task<string> GenerateIpaAsync(string frontText, string backText, Guid? userId = null)
+    {
+        _currentPromptType.Value = "GenerateIPA";
+        _currentUserId.Value = userId;
+        var prompt = $@"Generate the IPA (International Phonetic Alphabet) pronunciation for the word/phrase.
+
+- Word: {frontText}
+- Meaning: {backText}
+
+IMPORTANT RULES:
+- Return ONLY the IPA transcription enclosed in slashes, e.g. /ˈæp.əl/
+- Use the meaning to determine the correct pronunciation for homographs.
+  For example: ""present"" meaning ""a gift"" → /ˈprez.ənt/ but ""present"" meaning ""to show"" → /prɪˈzent/
+- Use standard IPA notation with proper stress marks (ˈ for primary, ˌ for secondary).
+- Return ONLY the IPA string, nothing else. No explanation, no brackets, just the IPA in slashes.";
+
+        var result = (await CallGeminiAsync(prompt)).Trim().Trim('"');
+        // Clean up: ensure it starts/ends with /
+        if (!result.StartsWith("/")) result = "/" + result;
+        if (!result.EndsWith("/")) result += "/";
+        return result;
+    }
+
+    // ══════════════════════════════════════════════════════════
     //  GENERATE IMAGE — Gemini AI image generation
     // ══════════════════════════════════════════════════════════
 

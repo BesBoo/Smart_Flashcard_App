@@ -153,6 +153,7 @@ public record DeckResponse(
 public record CreateFlashcardRequest(
     Guid Id, Guid DeckId,
     string FrontText, string BackText, string? ExampleText,
+    string? PronunciationIpa,
     string? ImageUrl, string? AudioUrl,
     int Repetition = 0, int IntervalDays = 1, double EaseFactor = 2.5,
     DateTime? NextReviewDate = null, int FailCount = 0, int TotalReviews = 0
@@ -160,6 +161,7 @@ public record CreateFlashcardRequest(
 
 public record UpdateFlashcardRequest(
     string FrontText, string BackText, string? ExampleText,
+    string? PronunciationIpa,
     string? ImageUrl, string? AudioUrl,
     int Repetition, int IntervalDays, double EaseFactor,
     DateTime NextReviewDate, int FailCount, int TotalReviews
@@ -168,6 +170,7 @@ public record UpdateFlashcardRequest(
 public record FlashcardResponse(
     Guid Id, Guid DeckId,
     string FrontText, string BackText, string? ExampleText,
+    string? PronunciationIpa,
     string? ImageUrl, string? AudioUrl,
     int Repetition, int IntervalDays, double EaseFactor,
     DateTime NextReviewDate, int FailCount, int TotalReviews,
@@ -208,6 +211,9 @@ public record AiGenerateResponse(List<DraftCard> Drafts, AiUsageInfo Usage);
 
 public record AiExampleRequest(string FrontText, string BackText, string Language = "vi");
 public record AiExampleResponse(string Example, AiUsageInfo Usage);
+
+public record AiIpaRequest(string FrontText, string BackText);
+public record AiIpaResponse(string Ipa, bool FromCache);
 
 public record AiImageRequest(string FrontText, string BackText = "");
 

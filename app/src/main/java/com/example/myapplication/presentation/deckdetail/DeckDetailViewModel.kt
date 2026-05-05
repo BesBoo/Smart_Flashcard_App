@@ -189,7 +189,8 @@ class DeckDetailViewModel @Inject constructor(
                                 deckId = deckId,
                                 frontText = row.frontText,
                                 backText = row.backText,
-                                exampleText = row.exampleText
+                                exampleText = row.exampleText,
+                                pronunciationIpa = row.pronunciationIpa
                             )
                         )
                         createdCount++

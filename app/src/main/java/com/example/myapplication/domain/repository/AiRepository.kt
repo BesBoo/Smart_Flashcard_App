@@ -41,6 +41,9 @@ interface AiRepository {
 
     /** Smart Review: Generate variant-based cloze questions from vocabulary */
     suspend fun generateSmartReview(words: List<SmartReviewInput>, questionCount: Int = 10, language: String = "en"): List<com.example.myapplication.domain.model.VariantQuestion>
+
+    /** Generate IPA pronunciation for a word (with community cache) */
+    suspend fun generateIpa(frontText: String, backText: String): String
 }
 
 /** Input for Smart Review question generation */

@@ -26,4 +26,10 @@ object DatabaseMigrations {
             db.execSQL("ALTER TABLE decks ADD COLUMN googleSheetUrl TEXT DEFAULT NULL")
         }
     }
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE flashcards ADD COLUMN pronunciationIpa TEXT DEFAULT NULL")
+        }
+    }
 }

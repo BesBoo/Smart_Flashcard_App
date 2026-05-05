@@ -101,6 +101,7 @@ public class GoogleSheetSyncService
             var front = (row.FrontText ?? "").Trim();
             var back = (row.BackText ?? "").Trim();
             var example = string.IsNullOrWhiteSpace(row.Example) ? null : row.Example.Trim();
+            var ipa = string.IsNullOrWhiteSpace(row.PronunciationIpa) ? null : row.PronunciationIpa.Trim();
 
             if (string.IsNullOrWhiteSpace(front) && string.IsNullOrWhiteSpace(back))
                 continue;
@@ -122,6 +123,7 @@ public class GoogleSheetSyncService
                 FrontText = front,
                 BackText = back,
                 ExampleText = example,
+                PronunciationIpa = ipa,
                 NextReviewDate = DateTime.UtcNow
             };
             _db.Flashcards.Add(newCard);
@@ -205,7 +207,8 @@ public class GoogleSheetSyncService
             {
                 FrontText = columns.ElementAtOrDefault(0) ?? "",
                 BackText = columns.ElementAtOrDefault(1) ?? "",
-                Example = columns.ElementAtOrDefault(2)
+                Example = columns.ElementAtOrDefault(2),
+                PronunciationIpa = columns.ElementAtOrDefault(3)
             });
         }
 
@@ -382,5 +385,6 @@ public class GoogleSheetSyncService
         public string? FrontText { get; set; }
         public string? BackText { get; set; }
         public string? Example { get; set; }
+        public string? PronunciationIpa { get; set; }
     }
 }

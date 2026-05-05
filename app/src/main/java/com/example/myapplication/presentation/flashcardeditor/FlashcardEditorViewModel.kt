@@ -36,12 +36,14 @@ data class FlashcardEditorUiState(
     val frontText: String = "",
     val backText: String = "",
     val exampleText: String = "",
+    val pronunciationIpa: String = "",
     val imageUrl: String? = null,
     val audioUrl: String? = null,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val isGeneratingImage: Boolean = false,
     val isGeneratingExample: Boolean = false,
+    val isGeneratingIpa: Boolean = false,
     val isTtsReady: Boolean = false,
     val error: String? = null,
     // Polysemy — auto-triggered inline
@@ -102,6 +104,7 @@ class FlashcardEditorViewModel @Inject constructor(
                             frontText = card.frontText,
                             backText = card.backText,
                             exampleText = card.exampleText ?: "",
+                            pronunciationIpa = card.pronunciationIpa ?: "",
                             imageUrl = card.imageUrl,
                             audioUrl = card.audioUrl
                         )
@@ -133,6 +136,31 @@ class FlashcardEditorViewModel @Inject constructor(
     }
     fun updateBack(text: String) { _uiState.update { it.copy(backText = text) } }
     fun updateExample(text: String) { _uiState.update { it.copy(exampleText = text) } }
+    fun updateIpa(text: String) { _uiState.update { it.copy(pronunciationIpa = text) } }
+
+    /** Generate IPA pronunciation using AI (with community cache) */
+    fun generateIpaWithAi() {
+        cancelAnalysis()
+        val front = _uiState.value.frontText
+        val back = _uiState.value.backText
+        if (front.isBlank()) {
+            _uiState.update { it.copy(error = "Nhập mặt trước trước khi tạo phiên âm IPA") }
+            return
+        }
+
+        _uiState.update { it.copy(isGeneratingIpa = true, error = null) }
+
+        viewModelScope.launch {
+            try {
+                val ipa = aiRepository.generateIpa(front, back.ifBlank { front })
+                _uiState.update { it.copy(pronunciationIpa = ipa, isGeneratingIpa = false) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isGeneratingIpa = false, error = "Không thể tạo phiên âm: ${e.localizedMessage}")
+                }
+            }
+        }
+    }
 
     /**
      * Manually trigger polysemy analysis when user clicks the button.
@@ -334,6 +362,7 @@ class FlashcardEditorViewModel @Inject constructor(
                                 frontText = state.frontText,
                                 backText = state.backText,
                                 exampleText = state.exampleText.ifBlank { null },
+                                pronunciationIpa = state.pronunciationIpa.ifBlank { null },
                                 imageUrl = state.imageUrl,
                                 audioUrl = state.audioUrl,
                                 updatedAt = System.currentTimeMillis()
@@ -370,6 +399,7 @@ class FlashcardEditorViewModel @Inject constructor(
                             frontText = state.frontText,
                             backText = state.backText,
                             exampleText = state.exampleText.ifBlank { null },
+                            pronunciationIpa = state.pronunciationIpa.ifBlank { null },
                             imageUrl = state.imageUrl,
                             audioUrl = state.audioUrl
                         )

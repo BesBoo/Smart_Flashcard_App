@@ -20,6 +20,9 @@ public class Flashcard
 
     public string? ExampleText { get; set; }
 
+    [MaxLength(200)]
+    public string? PronunciationIpa { get; set; }
+
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 

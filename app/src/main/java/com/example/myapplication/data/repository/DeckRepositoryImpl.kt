@@ -193,6 +193,7 @@ class DeckRepositoryImpl @Inject constructor(
                                 frontText = dto.frontText,
                                 backText = dto.backText,
                                 exampleText = dto.exampleText,
+                                pronunciationIpa = dto.pronunciationIpa,
                                 imageUrl = dto.imageUrl,
                                 audioUrl = dto.audioUrl,
                                 repetition = dto.repetition,
@@ -215,7 +216,8 @@ class DeckRepositoryImpl @Inject constructor(
                         for (c in remoteCards) {
                             flashcardDao.updateCardFieldsFull(
                                 id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
-                                exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
+                                exampleText = c.exampleText, pronunciationIpa = c.pronunciationIpa,
+                                imageUrl = c.imageUrl, audioUrl = c.audioUrl,
                                 repetition = c.repetition, intervalDays = c.intervalDays,
                                 easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
                                 failCount = c.failCount, totalReviews = c.totalReviews
@@ -248,6 +250,7 @@ class DeckRepositoryImpl @Inject constructor(
                         frontText = dto.frontText,
                         backText = dto.backText,
                         exampleText = dto.exampleText,
+                        pronunciationIpa = dto.pronunciationIpa,
                         imageUrl = dto.imageUrl,
                         audioUrl = dto.audioUrl,
                         repetition = dto.repetition,
@@ -268,7 +271,8 @@ class DeckRepositoryImpl @Inject constructor(
                 for (c in remoteCards) {
                     flashcardDao.updateCardFieldsFull(
                         id = c.id, userId = c.userId, frontText = c.frontText, backText = c.backText,
-                        exampleText = c.exampleText, imageUrl = c.imageUrl, audioUrl = c.audioUrl,
+                        exampleText = c.exampleText, pronunciationIpa = c.pronunciationIpa,
+                        imageUrl = c.imageUrl, audioUrl = c.audioUrl,
                         repetition = c.repetition, intervalDays = c.intervalDays,
                         easeFactor = c.easeFactor, nextReviewDate = c.nextReviewDate,
                         failCount = c.failCount, totalReviews = c.totalReviews

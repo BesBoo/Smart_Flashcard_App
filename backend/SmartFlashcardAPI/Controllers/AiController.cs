@@ -288,6 +288,54 @@ public class AiController : BaseController
         catch (Exception ex) { return HandleError(ex); }
     }
 
+    /// <summary>POST /api/ai/ipa — Generate or lookup IPA pronunciation (with community cache)</summary>
+    [HttpPost("ipa")]
+    public async Task<IActionResult> GenerateIpa([FromBody] AiIpaRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.FrontText))
+                return BadRequest(new { error = new { code = "VALIDATION_ERROR", message = "FrontText is required" } });
+
+            // 1. Check IPA cache first
+            var lookupKey = FlashcardService.NormalizeIpaKey(request.FrontText, request.BackText);
+            var cached = await _db.IpaCaches.FirstOrDefaultAsync(c => c.LookupKey == lookupKey);
+            if (cached != null)
+            {
+                // Cache hit — no AI quota consumed!
+                cached.UsageCount++;
+                await _db.SaveChangesAsync();
+                return Ok(new AiIpaResponse(cached.Ipa, FromCache: true));
+            }
+
+            // 2. Cache miss — check quota and call AI
+            var user = await GetCurrentUserAsync();
+            var limit = GetDailyLimit(user, "ExamplePerDay");
+            if (user.AiUsageToday >= limit)
+                return QuotaExceeded(GetUsageInfo(user, "ExamplePerDay"));
+
+            var ipa = await _gemini.GenerateIpaAsync(request.FrontText, request.BackText, GetUserId());
+
+            // 3. Cache the result for future users
+            try
+            {
+                _db.IpaCaches.Add(new IpaCache
+                {
+                    LookupKey = lookupKey,
+                    Ipa = ipa,
+                    FrontText = request.FrontText.Trim(),
+                    BackText = request.BackText?.Trim()
+                });
+                await _db.SaveChangesAsync();
+            }
+            catch { /* unique constraint — another request cached it first, ignore */ }
+
+            var usage = await IncrementUsageAsync(user, "ExamplePerDay");
+            return Ok(new AiIpaResponse(ipa, FromCache: false));
+        }
+        catch (Exception ex) { return HandleError(ex); }
+    }
+
     /// <summary>POST /api/ai/image — Generate image URL for a card using Gemini</summary>
     [HttpPost("image")]
     public async Task<IActionResult> GenerateImage([FromBody] AiImageRequest request)

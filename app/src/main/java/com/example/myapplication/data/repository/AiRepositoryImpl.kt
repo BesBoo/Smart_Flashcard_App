@@ -224,6 +224,13 @@ class AiRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun generateIpa(frontText: String, backText: String): String {
+        val response = aiApi.generateIpa(
+            com.example.myapplication.data.remote.dto.AiIpaRequest(frontText, backText)
+        )
+        return response.ipa
+    }
+
     private fun com.example.myapplication.data.remote.dto.SenseDto.toDomain(
         isSelected: Boolean = true
     ) = com.example.myapplication.domain.repository.WordSenseItem(

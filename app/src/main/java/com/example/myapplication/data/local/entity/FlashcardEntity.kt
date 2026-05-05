@@ -38,6 +38,7 @@ data class FlashcardEntity(
     val frontText: String,
     val backText: String,
     val exampleText: String? = null,
+    val pronunciationIpa: String? = null,
     val imageUrl: String? = null,
     val audioUrl: String? = null,
 

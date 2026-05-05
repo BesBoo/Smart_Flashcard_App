@@ -67,6 +67,9 @@ interface AiApi {
     @POST("api/ai/image")
     suspend fun generateImage(@Body request: AiImageRequest): AiImageResponse
 
+    @POST("api/ai/ipa")
+    suspend fun generateIpa(@Body request: com.example.myapplication.data.remote.dto.AiIpaRequest): com.example.myapplication.data.remote.dto.AiIpaResponse
+
     @GET("api/ai/usage/remaining")
     suspend fun getRemainingUsage(): AiUsageResponse
 

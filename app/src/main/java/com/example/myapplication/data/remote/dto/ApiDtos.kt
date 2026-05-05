@@ -242,6 +242,7 @@ data class CreateFlashcardRequest(
     val frontText: String,
     val backText: String,
     val exampleText: String? = null,
+    val pronunciationIpa: String? = null,
     val imageUrl: String? = null,
     val audioUrl: String? = null,
     val repetition: Int = 0,
@@ -257,6 +258,7 @@ data class UpdateFlashcardRequest(
     val frontText: String,
     val backText: String,
     val exampleText: String? = null,
+    val pronunciationIpa: String? = null,
     val imageUrl: String? = null,
     val audioUrl: String? = null,
     val repetition: Int,
@@ -274,6 +276,7 @@ data class FlashcardResponse(
     val frontText: String,
     val backText: String,
     val exampleText: String? = null,
+    val pronunciationIpa: String? = null,
     val imageUrl: String? = null,
     val audioUrl: String? = null,
     val repetition: Int,
@@ -388,6 +391,18 @@ data class AiExampleRequest(
 data class AiExampleResponse(
     val example: String,
     val usage: AiUsageInfo
+)
+
+@Serializable
+data class AiIpaRequest(
+    val frontText: String,
+    val backText: String
+)
+
+@Serializable
+data class AiIpaResponse(
+    val ipa: String,
+    val fromCache: Boolean = false
 )
 
 @Serializable

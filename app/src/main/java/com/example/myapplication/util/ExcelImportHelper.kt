@@ -9,12 +9,13 @@ import java.util.zip.ZipInputStream
 
 /**
  * Parsed row from an Excel file.
- * Columns: A=frontText, B=backText, C=example
+ * Columns: A=frontText, B=backText, C=example, D=IPA
  */
 data class ExcelCardRow(
     val frontText: String,
     val backText: String,
-    val exampleText: String?
+    val exampleText: String?,
+    val pronunciationIpa: String?
 )
 
 /**
@@ -34,6 +35,7 @@ data class ExcelImportResult(
  *   Column A: Front text (question / vocabulary)
  *   Column B: Back text (answer / meaning)
  *   Column C: Example (optional)
+ *   Column D: IPA pronunciation (optional)
  *
  * Rows where both A and B are empty are skipped.
  */
@@ -170,7 +172,7 @@ object ExcelImportHelper {
                                 rawValue
                             }
 
-                            if (colIndex in 0..2) {
+                            if (colIndex in 0..3) {
                                 currentRow[colIndex] = cellValue
                             }
                         }
@@ -179,6 +181,7 @@ object ExcelImportHelper {
                             val front = currentRow[0]?.trim() ?: ""
                             val back = currentRow[1]?.trim() ?: ""
                             val example = currentRow[2]?.trim() ?: ""
+                            val ipa = currentRow[3]?.trim() ?: ""
 
                             if (front.isBlank() && back.isBlank()) {
                                 skippedRows++
@@ -187,7 +190,8 @@ object ExcelImportHelper {
                                     ExcelCardRow(
                                         frontText = front,
                                         backText = back,
-                                        exampleText = example.ifBlank { null }
+                                        exampleText = example.ifBlank { null },
+                                        pronunciationIpa = ipa.ifBlank { null }
                                     )
                                 )
                             }

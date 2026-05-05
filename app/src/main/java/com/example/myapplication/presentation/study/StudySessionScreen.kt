@@ -170,6 +170,7 @@ fun StudySessionScreen(
                         frontText = uiState.currentCard?.frontText ?: "",
                         backText = uiState.currentCard?.backText ?: "",
                         exampleText = uiState.currentCard?.exampleText,
+                        pronunciationIpa = uiState.currentCard?.pronunciationIpa,
                         imageUrl = uiState.currentCard?.imageUrl,
                         isFlipped = uiState.isFlipped,
                         onFlip = { viewModel.flipCard() },
@@ -244,6 +245,7 @@ fun FlipCard(
     frontText: String,
     backText: String,
     exampleText: String?,
+    pronunciationIpa: String?,
     imageUrl: String?,
     isFlipped: Boolean,
     onFlip: () -> Unit,
@@ -306,6 +308,18 @@ fun FlipCard(
                         )
                     }
 
+                    // IPA on front side
+                    if (!pronunciationIpa.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = pronunciationIpa,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 16.sp,
+                            fontStyle = FontStyle.Italic,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
                     Spacer(Modifier.height(20.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -351,6 +365,18 @@ fun FlipCard(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
+                    }
+
+                    // IPA on back side
+                    if (!pronunciationIpa.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = pronunciationIpa,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 14.sp,
+                            fontStyle = FontStyle.Italic,
+                            textAlign = TextAlign.Center
+                        )
                     }
 
                     // Example

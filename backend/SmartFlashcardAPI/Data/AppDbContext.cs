@@ -37,6 +37,9 @@ public class AppDbContext : DbContext
     // Community image library
     public DbSet<SharedImage> SharedImages => Set<SharedImage>();
 
+    // IPA pronunciation cache
+    public DbSet<IpaCache> IpaCaches => Set<IpaCache>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -276,6 +279,14 @@ public class AppDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(s => s.UserId)
                   .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // ── IpaCaches ───────────────────────────────────────
+        modelBuilder.Entity<IpaCache>(entity =>
+        {
+            entity.HasIndex(e => e.LookupKey)
+                  .IsUnique()
+                  .HasDatabaseName("IX_IpaCaches_LookupKey");
         });
     }
 }

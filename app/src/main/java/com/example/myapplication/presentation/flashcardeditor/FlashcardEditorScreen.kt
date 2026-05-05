@@ -91,6 +91,7 @@ fun FlashcardEditorScreen(
     var localFront by remember { mutableStateOf(uiState.frontText) }
     var localBack by remember { mutableStateOf(uiState.backText) }
     var localExample by remember { mutableStateOf(uiState.exampleText) }
+    var localIpa by remember { mutableStateOf(uiState.pronunciationIpa) }
 
     // Sync FROM ViewModel ONLY when it changes from external source
     // (e.g. AI-generated example, loaded card data)
@@ -98,6 +99,7 @@ fun FlashcardEditorScreen(
     val lastVmFront = remember { mutableStateOf(uiState.frontText) }
     val lastVmBack = remember { mutableStateOf(uiState.backText) }
     val lastVmExample = remember { mutableStateOf(uiState.exampleText) }
+    val lastVmIpa = remember { mutableStateOf(uiState.pronunciationIpa) }
 
     if (uiState.frontText != lastVmFront.value) {
         lastVmFront.value = uiState.frontText
@@ -110,6 +112,10 @@ fun FlashcardEditorScreen(
     if (uiState.exampleText != lastVmExample.value) {
         lastVmExample.value = uiState.exampleText
         localExample = uiState.exampleText
+    }
+    if (uiState.pronunciationIpa != lastVmIpa.value) {
+        lastVmIpa.value = uiState.pronunciationIpa
+        localIpa = uiState.pronunciationIpa
     }
 
     // Debounced sync TO ViewModel (won't interrupt IME)
@@ -128,12 +134,18 @@ fun FlashcardEditorScreen(
             .debounce(500L)
             .collect { viewModel.updateExample(it) }
     }
+    LaunchedEffect(Unit) {
+        snapshotFlow { localIpa }
+            .debounce(500L)
+            .collect { viewModel.updateIpa(it) }
+    }
 
     // Helper: sync all local text to ViewModel immediately (before save)
     fun syncToViewModel() {
         viewModel.updateFront(localFront)
         viewModel.updateBack(localBack)
         viewModel.updateExample(localExample)
+        viewModel.updateIpa(localIpa)
     }
 
     // Photo picker launcher
@@ -369,6 +381,49 @@ fun FlashcardEditorScreen(
                     placeholder = { Text("Ví dụ: Quả táo", color = cs.onSurfaceVariant.copy(alpha = 0.5f)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 2,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = editorFieldColors()
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                // ── IPA Pronunciation + AI generate ──
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Phiên âm IPA (tùy chọn)",
+                        color = cs.onSurface,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (uiState.isGeneratingIpa) {
+                        CircularProgressIndicator(Modifier.size(20.dp), color = cs.primary, strokeWidth = 2.dp)
+                    } else {
+                        IconButton(
+                            onClick = { syncToViewModel(); viewModel.generateIpaWithAi() },
+                            modifier = Modifier.size(36.dp),
+                            enabled = localFront.isNotBlank()
+                        ) {
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                "AI tạo phiên âm IPA",
+                                tint = if (localFront.isNotBlank())
+                                    cs.primary else cs.onSurfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = localIpa,
+                    onValueChange = { localIpa = it },
+                    placeholder = { Text("Ví dụ: /ˈæp.əl/", color = cs.onSurfaceVariant.copy(alpha = 0.5f)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     colors = editorFieldColors()
                 )
