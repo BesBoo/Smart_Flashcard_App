@@ -1,15 +1,21 @@
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace SmartFlashcardAPI.Services;
 
 /// <summary>
-/// Sends emails via SMTP. Configured from appsettings.json → Smtp section.
+/// Sends emails via SMTP using MailKit (replaces deprecated System.Net.Mail).
+/// MailKit provides proper timeout control, modern TLS handling, and reliability
+/// on cloud platforms like Render where the old SmtpClient often hangs.
 /// </summary>
 public class EmailService
 {
     private readonly IConfiguration _config;
     private readonly ILogger<EmailService> _logger;
+
+    /// <summary>Connection + send timeout in seconds (default 15s to avoid Render request timeouts)</summary>
+    private const int SmtpTimeoutSeconds = 15;
 
     public EmailService(IConfiguration config, ILogger<EmailService> logger)
     {
@@ -48,7 +54,7 @@ public class EmailService
         await SendEmailAsync(toEmail, subject, body, isHtml: true);
     }
 
-    /// <summary>Send email via SMTP.</summary>
+    /// <summary>Send email via SMTP using MailKit with proper timeout handling.</summary>
     private async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
         var host = _config["Smtp:Host"] ?? "smtp.gmail.com";
@@ -65,25 +71,52 @@ public class EmailService
             return;
         }
 
+        // Build MIME message
+        var message = new MimeMessage();
+        message.From.Add(MailboxAddress.Parse(from));
+        message.To.Add(MailboxAddress.Parse(to));
+        message.Subject = subject;
+        message.Body = new TextPart(isHtml ? "html" : "plain") { Text = body };
+
+        // Use CancellationToken with timeout to prevent hanging
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(SmtpTimeoutSeconds));
+
         try
         {
-            using var client = new SmtpClient(host, port)
-            {
-                Credentials = new NetworkCredential(username, password),
-                EnableSsl = true
-            };
+            using var client = new MailKit.Net.Smtp.SmtpClient();
 
-            var message = new MailMessage(from!, to, subject, body)
-            {
-                IsBodyHtml = isHtml
-            };
+            // Set timeout on the underlying socket operations
+            client.Timeout = SmtpTimeoutSeconds * 1000; // milliseconds
 
-            await client.SendMailAsync(message);
-            _logger.LogInformation("Email sent to {To}: {Subject}", to, subject);
+            _logger.LogInformation("Connecting to SMTP {Host}:{Port}...", host, port);
+
+            // Connect with STARTTLS (port 587) or auto-detect
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls, cts.Token);
+
+            // Authenticate
+            await client.AuthenticateAsync(username, password, cts.Token);
+
+            // Send
+            await client.SendAsync(message, cts.Token);
+            await client.DisconnectAsync(true, cts.Token);
+
+            _logger.LogInformation("Email sent successfully to {To}: {Subject}", to, subject);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogError("SMTP timeout after {Seconds}s sending to {To}", SmtpTimeoutSeconds, to);
+            throw new InvalidOperationException(
+                $"Gửi email bị timeout sau {SmtpTimeoutSeconds} giây. Máy chủ SMTP không phản hồi.");
+        }
+        catch (MailKit.Security.AuthenticationException ex)
+        {
+            _logger.LogError(ex, "SMTP authentication failed for {Username}", username);
+            throw new InvalidOperationException(
+                "Xác thực SMTP thất bại. Vui lòng kiểm tra cấu hình email.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}", to);
+            _logger.LogError(ex, "Failed to send email to {To}: {Error}", to, ex.Message);
             throw new InvalidOperationException("Không thể gửi email. Vui lòng thử lại sau.");
         }
     }

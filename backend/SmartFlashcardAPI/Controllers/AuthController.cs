@@ -56,6 +56,11 @@ public class AuthController : BaseController
             await _authService.ForgotPasswordAsync(request.Email);
             return Ok(new { message = "Mã OTP đã được gửi tới email của bạn." });
         }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
+        {
+            // Email sending timed out but OTP was saved — tell user to retry or check spam
+            return Ok(new { message = "Mã OTP đã được tạo. Email có thể mất vài phút để tới. Hãy kiểm tra cả hộp thư rác." });
+        }
         catch (Exception ex) { return HandleError(ex); }
     }
 

@@ -100,7 +100,7 @@ public class AuthService
             .Where(t => t.UserId == user.Id && !t.IsUsed).ToListAsync();
         foreach (var t in existingTokens) t.IsUsed = true;
 
-        // Generate 6-digit OTP
+        // Generate 6-digit OTP and save FIRST (before email attempt)
         var otp = Random.Shared.Next(100000, 999999).ToString();
         _db.PasswordResetTokens.Add(new PasswordResetToken
         {
@@ -109,7 +109,10 @@ public class AuthService
             ExpiresAt = DateTime.UtcNow.AddMinutes(10)
         });
         await _db.SaveChangesAsync();
+        _logger.LogInformation("OTP generated for {Email}", email);
 
+        // Now attempt to send email — if this fails, OTP is still saved
+        // and the error will be caught by the controller
         await _emailService.SendPasswordResetEmailAsync(email, otp);
         _logger.LogInformation("Password reset OTP sent to {Email}", email);
     }
