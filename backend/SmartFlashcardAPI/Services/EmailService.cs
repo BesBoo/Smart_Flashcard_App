@@ -1,26 +1,33 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace SmartFlashcardAPI.Services;
 
 /// <summary>
-/// Sends emails via SMTP using MailKit (replaces deprecated System.Net.Mail).
-/// MailKit provides proper timeout control, modern TLS handling, and reliability
-/// on cloud platforms like Render where the old SmtpClient often hangs.
+/// Sends emails via HTTP API (Resend / SMTP fallback).
+/// 
+/// Gmail SMTP is blocked from cloud platforms like Render.
+/// Resend provides a free HTTP-based email API (100 emails/day free)
+/// that works reliably from any server.
+///
+/// Config (appsettings / env vars):
+///   Email:Provider = "Resend" | "Smtp"
+///   Email:Resend:ApiKey = "re_..."
+///   Email:Resend:From = "MemoHop &lt;noreply@yourdomain.com&gt;"
+///   (SMTP fallback uses existing Smtp:* config)
 /// </summary>
 public class EmailService
 {
     private readonly IConfiguration _config;
     private readonly ILogger<EmailService> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    /// <summary>Connection + send timeout in seconds (default 15s to avoid Render request timeouts)</summary>
-    private const int SmtpTimeoutSeconds = 15;
-
-    public EmailService(IConfiguration config, ILogger<EmailService> logger)
+    public EmailService(IConfiguration config, ILogger<EmailService> logger, IHttpClientFactory httpClientFactory)
     {
         _config = config;
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
     /// <summary>Send a password reset OTP email.</summary>
@@ -54,8 +61,79 @@ public class EmailService
         await SendEmailAsync(toEmail, subject, body, isHtml: true);
     }
 
-    /// <summary>Send email via SMTP using MailKit with proper timeout handling.</summary>
     private async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
+    {
+        var provider = _config["Email:Provider"]?.Trim();
+
+        // Use Resend if configured, otherwise fall back to SMTP
+        if (string.Equals(provider, "Resend", StringComparison.OrdinalIgnoreCase))
+        {
+            await SendViaResendAsync(to, subject, body, isHtml);
+        }
+        else
+        {
+            await SendViaSmtpAsync(to, subject, body, isHtml);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  RESEND (HTTP API — works from any cloud platform)
+    // ─────────────────────────────────────────────────────────
+
+    private async Task SendViaResendAsync(string to, string subject, string body, bool isHtml)
+    {
+        var apiKey = _config["Email:Resend:ApiKey"];
+        var from = _config["Email:Resend:From"] ?? "MemoHop <onboarding@resend.dev>";
+
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            _logger.LogWarning("Resend API key not configured. Email to {To}: {Subject}", to, subject);
+            return;
+        }
+
+        var client = _httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        client.Timeout = TimeSpan.FromSeconds(10);
+
+        var payload = new
+        {
+            from = from,
+            to = new[] { to },
+            subject = subject,
+            html = isHtml ? body : null,
+            text = isHtml ? null : body
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await client.PostAsync("https://api.resend.com/emails", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Email sent via Resend to {To}: {Subject}", to, subject);
+            }
+            else
+            {
+                _logger.LogError("Resend API error {Status}: {Body}", response.StatusCode, responseBody);
+                throw new InvalidOperationException($"Không thể gửi email (Resend: {response.StatusCode}).");
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogError("Resend API timeout sending to {To}", to);
+            throw new InvalidOperationException("Gửi email bị timeout. Vui lòng thử lại.");
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  SMTP FALLBACK (MailKit — for local dev or non-cloud)
+    // ─────────────────────────────────────────────────────────
+
+    private async Task SendViaSmtpAsync(string to, string subject, string body, bool isHtml)
     {
         var host = _config["Smtp:Host"] ?? "smtp.gmail.com";
         var port = _config.GetValue("Smtp:Port", 587);
@@ -65,58 +143,43 @@ public class EmailService
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
-            // Dev mode: log OTP instead of sending email
-            _logger.LogWarning("SMTP not configured. Email to {To}: {Subject} | Body preview: {Body}",
-                to, subject, body.Length > 100 ? body[..100] : body);
+            _logger.LogWarning("SMTP not configured. Email to {To}: {Subject}", to, subject);
             return;
         }
 
-        // Build MIME message
-        var message = new MimeMessage();
-        message.From.Add(MailboxAddress.Parse(from));
-        message.To.Add(MailboxAddress.Parse(to));
+        var message = new MimeKit.MimeMessage();
+        message.From.Add(MimeKit.MailboxAddress.Parse(from));
+        message.To.Add(MimeKit.MailboxAddress.Parse(to));
         message.Subject = subject;
-        message.Body = new TextPart(isHtml ? "html" : "plain") { Text = body };
+        message.Body = new MimeKit.TextPart(isHtml ? "html" : "plain") { Text = body };
 
-        // Use CancellationToken with timeout to prevent hanging
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(SmtpTimeoutSeconds));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
         try
         {
             using var client = new MailKit.Net.Smtp.SmtpClient();
+            client.Timeout = 15_000;
 
-            // Set timeout on the underlying socket operations
-            client.Timeout = SmtpTimeoutSeconds * 1000; // milliseconds
-
-            _logger.LogInformation("Connecting to SMTP {Host}:{Port}...", host, port);
-
-            // Connect with STARTTLS (port 587) or auto-detect
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls, cts.Token);
-
-            // Authenticate
+            await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.StartTls, cts.Token);
             await client.AuthenticateAsync(username, password, cts.Token);
-
-            // Send
             await client.SendAsync(message, cts.Token);
             await client.DisconnectAsync(true, cts.Token);
 
-            _logger.LogInformation("Email sent successfully to {To}: {Subject}", to, subject);
+            _logger.LogInformation("Email sent via SMTP to {To}: {Subject}", to, subject);
         }
         catch (OperationCanceledException)
         {
-            _logger.LogError("SMTP timeout after {Seconds}s sending to {To}", SmtpTimeoutSeconds, to);
-            throw new InvalidOperationException(
-                $"Gửi email bị timeout sau {SmtpTimeoutSeconds} giây. Máy chủ SMTP không phản hồi.");
+            _logger.LogError("SMTP timeout after 15s sending to {To}", to);
+            throw new InvalidOperationException("Gửi email bị timeout. SMTP server không phản hồi.");
         }
         catch (MailKit.Security.AuthenticationException ex)
         {
-            _logger.LogError(ex, "SMTP authentication failed for {Username}", username);
-            throw new InvalidOperationException(
-                "Xác thực SMTP thất bại. Vui lòng kiểm tra cấu hình email.");
+            _logger.LogError(ex, "SMTP auth failed for {Username}", username);
+            throw new InvalidOperationException("Xác thực SMTP thất bại.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}: {Error}", to, ex.Message);
+            _logger.LogError(ex, "Failed to send email via SMTP to {To}", to);
             throw new InvalidOperationException("Không thể gửi email. Vui lòng thử lại sau.");
         }
     }
