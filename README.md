@@ -21,11 +21,12 @@
 
 ## 📸 Giao Diện Ứng Dụng (Screenshots)
 <div align="center">
-  <img width="453" height="932" alt="image" src="https://github.com/user-attachments/assets/9c2026fe-853a-475f-ac59-f2306524e5ce" alt="Home Screen" />
+  <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/9c2026fe-853a-475f-ac59-f2306524e5ce" alt="Home Screen" />
     &nbsp;&nbsp;
-  <img width="458" height="925" alt="image" src="https://github.com/user-attachments/assets/b2fcb03f-a084-470c-8458-a97890d178c1" alt="Study Session" />
+  <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/b2fcb03f-a084-470c-8458-a97890d178c1" alt="Study Session" />
     &nbsp;&nbsp;
-  <img width="485" height="940" alt="image" src="https://github.com/user-attachments/assets/5043f6f3-b60a-4144-bc8f-5482b0c9a4a0" alt="Stats Screen" />
+  <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/5043f6f3-b60a-4144-bc8f-5482b0c9a4a0" alt="Stats Screen" />
+      &nbsp;&nbsp;
 </div>
 <br>
 
