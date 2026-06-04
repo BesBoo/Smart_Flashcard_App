@@ -97,14 +97,6 @@ MemoHop/
   ./gradlew bundleRelease
   ```
 
----
 
-## 🗺️ Roadmap Phát Triển (Post-Launch)
 
-- **v1.1 (Tháng 1):** Hỗ trợ Premium subscription, thêm mô hình AI (Claude, GPT-4), Widget học trên home screen, Push Notification.
-- **v1.2 (Tháng 2-3):** Tính năng Public Decks, Leaderboard, Gamification, và Import từ Anki/Quizlet.
-- **v2.0 (Tháng 6):** Lớp học nhóm (Group Class), Giáo viên tạo đề kiểm tra, Phân tích điểm yếu người dùng qua AI.
-
----
-
-**Tác giả:** Trần Duy Đức (tranduyduc9679@gmail.com)
+**Tác giả:** Trần Duy Đức (BesBoo)
