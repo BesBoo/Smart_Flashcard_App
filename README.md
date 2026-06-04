@@ -20,18 +20,13 @@
 ---
 
 ## 📸 Giao Diện Ứng Dụng (Screenshots)
-
 <div align="center">
-  <!-- TODO: Thay thế đường dẫn bằng ảnh thực tế sau khi chụp trên điện thoại/máy ảo -->
-  <img src="https://via.placeholder.com/250x500.png?text=Home+Screen" width="220" alt="Home Screen"/>
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/250x500.png?text=Study+Session" width="220" alt="Study Session"/>
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/250x500.png?text=AI+Tutor" width="220" alt="AI Tutor"/>
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/250x500.png?text=Statistics" width="220" alt="Stats Screen"/>
+  <img width="453" height="932" alt="image" src="https://github.com/user-attachments/assets/9c2026fe-853a-475f-ac59-f2306524e5ce" alt="Home Screen" />
+    &nbsp;&nbsp;
+  <img width="458" height="925" alt="image" src="https://github.com/user-attachments/assets/b2fcb03f-a084-470c-8458-a97890d178c1" alt="Study Session" />
+    &nbsp;&nbsp;
+  <img width="485" height="940" alt="image" src="https://github.com/user-attachments/assets/5043f6f3-b60a-4144-bc8f-5482b0c9a4a0" alt="Stats Screen" />
 </div>
-
 <br>
 
 ---
