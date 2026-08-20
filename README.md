@@ -1,25 +1,25 @@
-# 📱 MemoHop — Smart Flashcard App
+#  MemoHop — Smart Flashcard App
 
 > **MemoHop** là ứng dụng học từ vựng thông minh kết hợp giữa thuật toán Spaced Repetition (Lặp lại ngắt quãng - SM-2) và Trí tuệ nhân tạo (AI) giúp bạn tăng tốc độ ghi nhớ kiến thức lên gấp 3 lần.
 
 ---
 
-## ✨ Tính Năng Nổi Bật
+##  Tính Năng Nổi Bật
 
-- **🧠 Thuật Toán SM-2 (Spaced Repetition):** Tối ưu hóa thời gian ôn tập tự động dựa trên mức độ ghi nhớ (4 mức: Học lại, Khó, Tốt, Dễ).
-- **🤖 Tích hợp Trợ lý AI (Gemini):**
+- ** Thuật Toán SM-2 (Spaced Repetition):** Tối ưu hóa thời gian ôn tập tự động dựa trên mức độ ghi nhớ (4 mức: Học lại, Khó, Tốt, Dễ).
+- ** Tích hợp Trợ lý AI (Gemini):**
   - Tự động tạo Flashcard từ văn bản thô, file PDF, hoặc DOCX.
   - AI tự động trích xuất từ vựng quan trọng từ tài liệu.
   - Tự động sinh ví dụ và hình ảnh minh họa sinh động.
   - **AI Tutor:** Trò chuyện giải đáp thắc mắc về từ vựng trực tiếp.
-- **📝 Bài Kiểm Tra Tương Tác (Quiz):** Sinh câu hỏi trắc nghiệm và tự luận (2 phần) để ôn tập sâu hơn.
-- **☁️ Đồng Bộ Hóa Đám Mây (Cloud Sync):** Hoạt động hoàn hảo ở chế độ ngoại tuyến (Offline-first) với Room Database và tự động đồng bộ ngầm (Delta Sync) lên Server thông qua WorkManager.
-- **📊 Thống Kê Học Tập:** Biểu đồ trực quan, theo dõi chuỗi ngày học (Streak), tỉ lệ chính xác và dự báo khối lượng thẻ cần ôn mỗi ngày.
-- **🎨 Giao Diện Hiện Đại:** Sử dụng Jetpack Compose với hoạt ảnh lật thẻ 3D mượt mà, hỗ trợ giao diện Sáng/Tối (Dark Mode) và typography chuẩn.
+- ** Bài Kiểm Tra Tương Tác (Quiz):** Sinh câu hỏi trắc nghiệm và tự luận (2 phần) để ôn tập sâu hơn.
+- ** Đồng Bộ Hóa Đám Mây (Cloud Sync):** Hoạt động hoàn hảo ở chế độ ngoại tuyến (Offline-first) với Room Database và tự động đồng bộ ngầm (Delta Sync) lên Server thông qua WorkManager.
+- ** Thống Kê Học Tập:** Biểu đồ trực quan, theo dõi chuỗi ngày học (Streak), tỉ lệ chính xác và dự báo khối lượng thẻ cần ôn mỗi ngày.
+- ** Giao Diện Hiện Đại:** Sử dụng Jetpack Compose với hoạt ảnh lật thẻ 3D mượt mà, hỗ trợ giao diện Sáng/Tối (Dark Mode) và typography chuẩn.
 
 ---
 
-## 📸 Giao Diện Ứng Dụng (Screenshots)
+##  Giao Diện Ứng Dụng (Screenshots)
 <div align="center">
   <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/9c2026fe-853a-475f-ac59-f2306524e5ce" alt="Home Screen" />
     &nbsp;&nbsp;
@@ -32,7 +32,7 @@
 
 ---
 
-## 🛠️ Công Nghệ & Kiến Trúc Sử Dụng
+##  Công Nghệ & Kiến Trúc Sử Dụng
 
 Dự án được xây dựng tuân thủ mô hình **Clean Architecture** (Data → Domain → Presentation).
 
@@ -53,7 +53,7 @@ Dự án được xây dựng tuân thủ mô hình **Clean Architecture** (Data
 
 ---
 
-## 📁 Cấu Trúc Dự Án
+##  Cấu Trúc Dự Án
 
 ```text
 MemoHop/
@@ -73,7 +73,7 @@ MemoHop/
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt (Local Development)
+##  Hướng Dẫn Cài Đặt (Local Development)
 
 ### 1. Thiết lập Backend (.NET 9)
 1. Mở thư mục `backend/` bằng Visual Studio hoặc JetBrains Rider.
